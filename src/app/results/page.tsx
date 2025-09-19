@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSamplesStore } from '@/stores/sampleStore';
-import { SampleData, PollutionIndexResultWithML } from '@/types';
-import { calculatePollutionIndices, calculateMultipleSamples } from '@/lib/calculations';
+import { SampleData } from '@/types';
+import { calculateMultipleSamples } from '@/lib/calculations';
 import { calculatePollutionIndicesEnhanced } from '@/lib/enhancedMLModels'; // Import enhanced ML function
 import { downloadCSV, convertToCSV, formatNumber } from '@/lib/utils';
 import { jsPDF } from 'jspdf';
@@ -22,6 +22,17 @@ interface EnhancedPollutionIndexResult extends PollutionIndexResultWithML {
   ensembleHPI?: number | null;
   confidence?: number | null;
   recommendations?: string[];
+}
+
+interface PollutionIndexResultWithML {
+  sampleId: string;
+  hpi: number;
+  hei: number;
+  cd: number;
+  ef: number;
+  safetyLevel: 'Safe' | 'Moderate' | 'High' | 'Critical';
+  riskAssessment: string;
+  isMLAnalysis: boolean;
 }
 
 export default function ResultsPage() {
@@ -571,9 +582,9 @@ export default function ResultsPage() {
                     <p className="font-medium">Assessment Criteria:</p>
                     <ul className="list-disc pl-5 mt-1 space-y-1">
                       <li>HPI &lt; 100: Safe</li>
-                      <li>100 ≤ HPI &lt; 200: Moderate</li>
-                      <li>200 ≤ HPI &lt; 300: High</li>
-                      <li>HPI ≥ 300: Critical</li>
+                      <li>HPI 100-200: Moderate</li>
+                      <li>HPI 200-300: High</li>
+                      <li>HPI &gt; 300: Critical</li>
                     </ul>
                   </div>
                 </div>

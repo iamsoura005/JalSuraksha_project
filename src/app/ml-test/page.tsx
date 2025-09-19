@@ -1,17 +1,69 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { loadMLModels } from '@/lib/mlModels';
 import { loadEnhancedMLModels } from '@/lib/enhancedMLModels';
 import { SampleData } from '@/types';
 import { calculatePollutionIndices } from '@/lib/mlModels';
 import { calculatePollutionIndicesEnhanced } from '@/lib/enhancedMLModels';
+import * as tf from '@tensorflow/tfjs';
+
+// Define proper types instead of 'any'
+interface StandardModels {
+  regressionModel: tf.LayersModel | null;
+  classificationModel: tf.LayersModel | null;
+  preprocessingParams: PreprocessingParams | null;
+}
+
+interface EnhancedModels {
+  regressionModel: tf.LayersModel | null;
+  classificationModel: tf.LayersModel | null;
+  anomalyDetectionModel: tf.LayersModel | null;
+  ensembleModels: tf.LayersModel[];
+  preprocessingParams: PreprocessingParams | null;
+}
+
+interface PreprocessingParams {
+  feature_means: number[];
+  feature_stds: number[];
+  feature_names: string[];
+}
+
+interface StandardTestResult {
+  sampleId: string;
+  hpi: number;
+  hei: number;
+  cd: number;
+  ef: number;
+  safetyLevel: string;
+  // Note: calculatePollutionIndices from mlModels.ts doesn't return isMLAnalysis or riskAssessment
+}
+
+interface TestResult {
+  standard: StandardTestResult;
+  enhanced: {
+    sampleId: string;
+    hpi: number;
+    hei: number;
+    cd: number;
+    ef: number;
+    safetyLevel: string;
+    isMLAnalysis: boolean;
+    isAnomaly: boolean;
+    anomalyScore: number;
+    ensembleHPI: number | null;
+    confidence: number | null;
+    riskAssessment: string;
+    recommendations: string[];
+  };
+}
 
 export default function MLTestPage() {
   const [loading, setLoading] = useState(true);
-  const [standardModels, setStandardModels] = useState<any>(null);
-  const [enhancedModels, setEnhancedModels] = useState<any>(null);
-  const [testResult, setTestResult] = useState<any>(null);
+  const [standardModels, setStandardModels] = useState<StandardModels | null>(null);
+  const [enhancedModels, setEnhancedModels] = useState<EnhancedModels | null>(null);
+  const [testResult, setTestResult] = useState<TestResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -157,27 +209,28 @@ export default function MLTestPage() {
               <div className="border border-gray-200 rounded-lg p-4">
                 <h3 className="text-lg font-medium text-gray-900 mb-3">Standard ML Calculation</h3>
                 <div className="space-y-2">
-                  <p><span className="font-medium">HPI:</span> {testResult.standard.hpi.toFixed(2)}</p>
-                  <p><span className="font-medium">HEI:</span> {testResult.standard.hei.toFixed(2)}</p>
-                  <p><span className="font-medium">Cd:</span> {testResult.standard.cd.toFixed(2)}</p>
-                  <p><span className="font-medium">EF:</span> {testResult.standard.ef.toFixed(2)}</p>
-                  <p><span className="font-medium">Safety Level:</span> {testResult.standard.safetyLevel}</p>
-                  <p><span className="font-medium">ML Analysis:</span> {testResult.standard.isMLAnalysis ? 'Yes' : 'No'}</p>
+                  <p><span className="font-medium">Sample ID:</span> {testResult.standard.sampleId || 'N/A'}</p>
+                  <p><span className="font-medium">HPI:</span> {testResult.standard.hpi?.toFixed(2) || 'N/A'}</p>
+                  <p><span className="font-medium">HEI:</span> {testResult.standard.hei?.toFixed(2) || 'N/A'}</p>
+                  <p><span className="font-medium">Cd:</span> {testResult.standard.cd?.toFixed(2) || 'N/A'}</p>
+                  <p><span className="font-medium">EF:</span> {testResult.standard.ef?.toFixed(2) || 'N/A'}</p>
+                  <p><span className="font-medium">Safety Level:</span> {testResult.standard.safetyLevel || 'N/A'}</p>
                 </div>
               </div>
               
               <div className="border border-gray-200 rounded-lg p-4">
                 <h3 className="text-lg font-medium text-gray-900 mb-3">Enhanced ML Calculation</h3>
                 <div className="space-y-2">
-                  <p><span className="font-medium">HPI:</span> {testResult.enhanced.hpi.toFixed(2)}</p>
-                  <p><span className="font-medium">HEI:</span> {testResult.enhanced.hei.toFixed(2)}</p>
-                  <p><span className="font-medium">Cd:</span> {testResult.enhanced.cd.toFixed(2)}</p>
-                  <p><span className="font-medium">EF:</span> {testResult.enhanced.ef.toFixed(2)}</p>
-                  <p><span className="font-medium">Safety Level:</span> {testResult.enhanced.safetyLevel}</p>
+                  <p><span className="font-medium">Sample ID:</span> {testResult.enhanced.sampleId || 'N/A'}</p>
+                  <p><span className="font-medium">HPI:</span> {testResult.enhanced.hpi?.toFixed(2) || 'N/A'}</p>
+                  <p><span className="font-medium">HEI:</span> {testResult.enhanced.hei?.toFixed(2) || 'N/A'}</p>
+                  <p><span className="font-medium">Cd:</span> {testResult.enhanced.cd?.toFixed(2) || 'N/A'}</p>
+                  <p><span className="font-medium">EF:</span> {testResult.enhanced.ef?.toFixed(2) || 'N/A'}</p>
+                  <p><span className="font-medium">Safety Level:</span> {testResult.enhanced.safetyLevel || 'N/A'}</p>
                   <p><span className="font-medium">ML Analysis:</span> {testResult.enhanced.isMLAnalysis ? 'Yes' : 'No'}</p>
-                  <p><span className="font-medium">Anomaly:</span> {testResult.enhanced.isAnomaly ? 'Yes' : 'No'}</p>
-                  {testResult.enhanced.confidence && (
-                    <p><span className="font-medium">Confidence:</span> {(testResult.enhanced.confidence * 100).toFixed(1)}%</p>
+                  <p><span className="font-medium">Anomaly:</span> {testResult.enhanced.isAnomaly !== undefined ? (testResult.enhanced.isAnomaly ? 'Yes' : 'No') : 'N/A'}</p>
+                  {testResult.enhanced.confidence !== undefined && testResult.enhanced.confidence !== null && (
+                    <p><span className="font-medium">Confidence:</span> {(Number(testResult.enhanced.confidence) * 100).toFixed(1)}%</p>
                   )}
                 </div>
               </div>
@@ -192,12 +245,12 @@ export default function MLTestPage() {
           >
             Retry Test
           </button>
-          <a 
+          <Link 
             href="/" 
             className="ml-4 px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700"
           >
             Back to Home
-          </a>
+          </Link>
         </div>
       </div>
     </div>

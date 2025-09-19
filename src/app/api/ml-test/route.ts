@@ -1,6 +1,4 @@
 import { NextResponse } from 'next/server';
-import { loadMLModels } from '@/lib/mlModels';
-import { loadEnhancedMLModels } from '@/lib/enhancedMLModels';
 
 export async function GET() {
   // ML models can only be loaded in browser environment, not in server API routes

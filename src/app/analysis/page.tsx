@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSamplesStore } from '@/stores/sampleStore';
 import { SampleData } from '@/types';
-import { calculateHPI, calculateHEI, calculateCd, calculateEF } from '@/lib/calculations';
+import { calculateHPI } from '@/lib/calculations';
 
 // Define types for analysis results
 interface CorrelationResult {
@@ -39,7 +39,7 @@ export default function AdvancedAnalysisPage() {
   const [activeTab, setActiveTab] = useState<'correlation' | 'sources' | 'risk' | 'scenarios'>('correlation');
 
   // Calculate correlations between metals
-  const calculateCorrelations = () => {
+  const calculateCorrelations = useCallback(() => {
     if (samples.length === 0) return [];
 
     // Get all metal names
@@ -69,10 +69,10 @@ export default function AdvancedAnalysisPage() {
     }
     
     return results.sort((a, b) => Math.abs(b.correlation) - Math.abs(a.correlation));
-  };
+  }, [samples]);
 
   // Calculate Pearson correlation coefficient
-  const calculatePearsonCorrelation = (x: number[], y: number[]): number => {
+  const calculatePearsonCorrelation = useCallback((x: number[], y: number[]): number => {
     const n = x.length;
     if (n !== y.length || n === 0) return 0;
     
@@ -88,10 +88,10 @@ export default function AdvancedAnalysisPage() {
     if (denominator === 0) return 0;
     
     return numerator / denominator;
-  };
+  }, []);
 
   // Identify likely sources of contamination
-  const identifySources = () => {
+  const identifySources = useCallback(() => {
     if (samples.length === 0) return [];
     
     const results: SourceIdentificationResult[] = [];
@@ -160,10 +160,10 @@ export default function AdvancedAnalysisPage() {
     });
     
     return results;
-  };
+  }, [samples]);
 
   // Perform risk assessment for different exposure scenarios
-  const performRiskAssessment = () => {
+  const performRiskAssessment = useCallback(() => {
     const results: RiskAssessmentResult[] = [
       {
         scenario: 'Drinking Water',
@@ -201,10 +201,10 @@ export default function AdvancedAnalysisPage() {
     ];
     
     return results;
-  };
+  }, [samples, calculateHPI]);
 
   // Perform what-if scenario planning
-  const performScenarioPlanning = () => {
+  const performScenarioPlanning = useCallback(() => {
     if (samples.length === 0) return [];
     
     // Use the first sample as baseline for scenarios
@@ -248,7 +248,7 @@ export default function AdvancedAnalysisPage() {
     ];
     
     return scenarios;
-  };
+  }, [samples, calculateHPI]);
 
   // Run analyses when samples change
   useEffect(() => {
@@ -256,7 +256,7 @@ export default function AdvancedAnalysisPage() {
     setSourceResults(identifySources());
     setRiskAssessmentResults(performRiskAssessment());
     setScenarioResults(performScenarioPlanning());
-  }, [samples]);
+  }, [samples, calculateCorrelations, identifySources, performRiskAssessment, performScenarioPlanning]);
 
   // Get color for correlation value
   const getCorrelationColor = (correlation: number) => {

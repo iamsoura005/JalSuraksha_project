@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSamplesStore, SampleStore } from '@/stores/sampleStore';
 import { SampleData } from '@/types';
 import { calculateHPI, calculateHEI, calculateCd } from '@/lib/calculations';
@@ -110,6 +110,43 @@ export default function ReportsPage() {
     }
   ]);
 
+  // Check compliance with regulatory standards
+  const checkCompliance = useCallback((sample: SampleData) => {
+    const compliance: Record<string, { compliant: boolean; limit: number; value: number }> = {};
+    
+    regulatoryStandards.forEach(standard => {
+      let isCompliant = true;
+      
+      Object.entries(sample).forEach(([key, value]) => {
+        if (['lead', 'arsenic', 'cadmium', 'chromium', 'copper', 'iron', 'zinc'].includes(key)) {
+          const metal = key as keyof SampleData;
+          const concentration = value as number;
+          const limit = standard.limits[metal as keyof RegulatoryStandard['limits']];
+          
+          if (concentration > limit) {
+            isCompliant = false;
+          }
+          
+          if (!compliance[standard.name]) {
+            compliance[standard.name] = { 
+              compliant: concentration <= limit, 
+              limit, 
+              value: concentration 
+            };
+          }
+        }
+      });
+      
+      // Update overall compliance status
+      compliance[standard.name] = { 
+        ...compliance[standard.name],
+        compliant: isCompliant
+      };
+    });
+    
+    return compliance;
+  }, [regulatoryStandards]);
+
   // Check for alerts based on regulatory standards
   useEffect(() => {
     const newAlerts: Alert[] = [];
@@ -169,44 +206,7 @@ export default function ReportsPage() {
     });
     
     setReports(newReports);
-  }, [samples]);
-
-  // Check compliance with regulatory standards
-  const checkCompliance = (sample: SampleData) => {
-    const compliance: Record<string, { compliant: boolean; limit: number; value: number }> = {};
-    
-    regulatoryStandards.forEach(standard => {
-      let isCompliant = true;
-      
-      Object.entries(sample).forEach(([key, value]) => {
-        if (['lead', 'arsenic', 'cadmium', 'chromium', 'copper', 'iron', 'zinc'].includes(key)) {
-          const metal = key as keyof SampleData;
-          const concentration = value as number;
-          const limit = standard.limits[metal as keyof RegulatoryStandard['limits']];
-          
-          if (concentration > limit) {
-            isCompliant = false;
-          }
-          
-          if (!compliance[standard.name]) {
-            compliance[standard.name] = { 
-              compliant: concentration <= limit, 
-              limit, 
-              value: concentration 
-            };
-          }
-        }
-      });
-      
-      // Update overall compliance status
-      compliance[standard.name] = { 
-        ...compliance[standard.name],
-        compliant: isCompliant
-      };
-    });
-    
-    return compliance;
-  };
+  }, [samples, checkCompliance]);
 
   // Generate report based on selected template
   const generateReport = () => {

@@ -16,7 +16,6 @@ export default function DashboardPage() {
   const [user, setUser] = useState<{ name: string; email: string; role: string } | null>(null);
   const [activeTab, setActiveTab] = useState('overview');
   const router = useRouter();
-  const samples = useSamplesStore((state: SampleStore) => state.samples);
   const clearSamples = useSamplesStore((state: SampleStore) => state.clearSamples);
 
   useEffect(() => {

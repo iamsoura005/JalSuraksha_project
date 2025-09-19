@@ -215,7 +215,6 @@ export const predictPollutionIndexEnhanced = async (sampleData: SampleData): Pro
   const { 
     regressionModel, 
     classificationModel, 
-    anomalyDetectionModel, 
     ensembleModels, 
     preprocessingParams, 
     modelsLoaded 
