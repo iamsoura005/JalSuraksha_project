@@ -64,13 +64,13 @@ const SimpleMap = ({ samples }: { samples: SampleData[] }) => {
   };
 
   return (
-    <div className="bg-gray-100/30 backdrop-blur-sm border border-gray-300/30 rounded-lg h-96 w-full relative">
+    <div className="bg-gray-100/30 backdrop-blur-sm border border-gray-300/30 rounded-lg h-96 w-full relative overflow-hidden">
       {typeof window !== 'undefined' ? (
         <MapContainer 
           center={defaultCenter} 
           zoom={defaultZoom} 
           style={{ height: '100%', width: '100%' }}
-          className="rounded-lg absolute top-0 left-0 bottom-0 right-0"
+          className="z-0"
         >
           <TileLayer
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
