@@ -3,13 +3,9 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSamplesStore } from '@/stores/sampleStore';
-import { calculateMultipleSamples } from '@/lib/calculations';
-import { calculatePollutionIndicesEnhanced } from '@/lib/enhancedMLModels';
 import { SampleData, PollutionIndexResultWithML } from '@/types';
-import { formatNumber } from '@/lib/utils';
-import { downloadCSV } from '@/lib/utils';
-
-// Import jsPDF for PDF generation
+import { calculateHPI, calculateHEI, calculateCd, calculateEF, getSafetyLevel, calculatePollutionIndices, calculateMultipleSamples } from '@/lib/calculations';
+import { downloadCSV, convertToCSV, formatNumber } from '@/lib/utils';
 import { jsPDF } from 'jspdf';
 
 // Define the type for the store
@@ -46,11 +42,12 @@ export default function ResultsPage() {
     const processSamples = async () => {
       try {
         // Try enhanced ML models first, fall back to standard if not available
+        // Since calculatePollutionIndicesEnhanced doesn't exist, we'll use calculatePollutionIndices
         const enhancedResults: EnhancedPollutionIndexResult[] = await Promise.all(
-          samples.map(sample => calculatePollutionIndicesEnhanced(sample))
+          samples.map(sample => calculatePollutionIndices(sample))
         );
         
-        setResults(enhancedResults);
+        setResults(enhancedResults as EnhancedPollutionIndexResult[]);
         
         // Check if any sample used ML analysis
         const hasMLAnalysis = enhancedResults.some(result => result.isMLAnalysis);
@@ -62,10 +59,10 @@ export default function ResultsPage() {
         // Fall back to standard calculation
         try {
           const calculatedResults = await calculateMultipleSamples(samples);
-          setResults(calculatedResults);
+          setResults(calculatedResults as EnhancedPollutionIndexResult[]);
           
           // Check if any sample used ML analysis
-          const hasMLAnalysis = calculatedResults.some(result => result.isMLAnalysis);
+          const hasMLAnalysis = calculatedResults.some((result: PollutionIndexResultWithML) => result.isMLAnalysis);
           setIsMLAnalysis(hasMLAnalysis);
           
           setLoading(false);
@@ -133,7 +130,9 @@ export default function ResultsPage() {
         Confidence: result.confidence ? formatNumber(result.confidence) : 'N/A'
       }));
       
-      downloadCSV(csvData, 'pollution-index-report');
+      // Convert array to CSV string and download
+      const csvString = convertToCSV(csvData);
+      downloadCSV(csvString, 'pollution-index-report.csv');
     } else if (format === 'pdf') {
       // Generate PDF report
       generatePDFReport();
@@ -154,7 +153,18 @@ export default function ResultsPage() {
         Confidence: result.confidence ? formatNumber(result.confidence) : 'N/A',
         Recommendations: result.recommendations ? result.recommendations.join('; ') : 'N/A'
       }));
-      downloadCSV(jsonData, 'pollution-index-report');
+      
+      // Convert array to CSV string and download (JSON format)
+      const jsonString = JSON.stringify(jsonData, null, 2);
+      const blob = new Blob([jsonString], { type: 'application/json' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'pollution-index-report.json';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
     }
   };
 

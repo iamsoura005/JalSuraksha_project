@@ -36,3 +36,31 @@ export function downloadCSV(data: string, filename: string): void {
   document.body.removeChild(a);
   window.URL.revokeObjectURL(url);
 }
+
+/**
+ * Convert array of objects to CSV string
+ */
+export function convertToCSV(data: Record<string, any>[]): string {
+  if (!data || data.length === 0) return '';
+  
+  // Get headers from the first object
+  const headers = Object.keys(data[0]);
+  
+  // Create CSV header row
+  const csvHeader = headers.join(',');
+  
+  // Create CSV data rows
+  const csvRows = data.map(row => {
+    return headers.map(header => {
+      const value = row[header];
+      // Escape values that contain commas, quotes, or newlines
+      if (typeof value === 'string' && (value.includes(',') || value.includes('"') || value.includes('\n'))) {
+        return `"${value.replace(/"/g, '""')}"`;
+      }
+      return value;
+    }).join(',');
+  });
+  
+  // Combine header and rows
+  return [csvHeader, ...csvRows].join('\n');
+}
