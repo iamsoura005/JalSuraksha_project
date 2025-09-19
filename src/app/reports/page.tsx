@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useSamplesStore, SampleStore } from '@/stores/sampleStore';
-import { SampleData, PollutionIndexResult } from '@/types';
+import { SampleData } from '@/types';
 import { calculateHPI, calculateHEI, calculateCd } from '@/lib/calculations';
 import { generateId } from '@/lib/utils';
 

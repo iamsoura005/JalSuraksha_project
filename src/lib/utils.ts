@@ -40,7 +40,7 @@ export function downloadCSV(data: string, filename: string): void {
 /**
  * Convert array of objects to CSV string
  */
-export function convertToCSV(data: Record<string, any>[]): string {
+export function convertToCSV<T extends Record<string, unknown>>(data: T[]): string {
   if (!data || data.length === 0) return '';
   
   // Get headers from the first object

@@ -256,7 +256,7 @@ export default function AdvancedAnalysisPage() {
     setSourceResults(identifySources());
     setRiskAssessmentResults(performRiskAssessment());
     setScenarioResults(performScenarioPlanning());
-  }, [samples, calculateCorrelations, identifySources, performRiskAssessment, performScenarioPlanning]);
+  }, [samples]);
 
   // Get color for correlation value
   const getCorrelationColor = (correlation: number) => {

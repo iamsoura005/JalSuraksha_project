@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { signOut } from '@/lib/auth';
 import { useSamplesStore } from '@/stores/sampleStore';
 import { SampleData } from '@/types';
-import { formatNumber } from '@/lib/utils';
 
 interface SampleStore {
   samples: SampleData[];

@@ -6,8 +6,7 @@ import { useSamplesStore } from '@/stores/sampleStore';
 import { calculateMultipleSamples } from '@/lib/calculations';
 import { SampleData, PollutionIndexResultWithML } from '@/types';
 import { formatNumber } from '@/lib/utils';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar, AreaChart, Area } from 'recharts';
-import { useTranslation } from 'react-i18next';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar } from 'recharts';
 
 // Define the type for the store
 interface SampleStore {
@@ -57,7 +56,6 @@ export default function AnalyticsPage() {
   const [activeTab, setActiveTab] = useState('trends'); // 'trends', 'predictions', 'seasonal'
   const router = useRouter();
   const samples = useSamplesStore((state: SampleStore) => state.samples);
-  const { t } = useTranslation();
 
   useEffect(() => {
     if (samples.length === 0) {

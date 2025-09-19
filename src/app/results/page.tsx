@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSamplesStore } from '@/stores/sampleStore';
 import { SampleData, PollutionIndexResultWithML } from '@/types';
-import { calculateHPI, calculateHEI, calculateCd, calculateEF, getSafetyLevel, calculatePollutionIndices, calculateMultipleSamples } from '@/lib/calculations';
+import { calculatePollutionIndices, calculateMultipleSamples } from '@/lib/calculations';
 import { downloadCSV, convertToCSV, formatNumber } from '@/lib/utils';
 import { jsPDF } from 'jspdf';
 

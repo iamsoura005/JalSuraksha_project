@@ -6,10 +6,9 @@ import { useSamplesStore } from '@/stores/sampleStore';
 import { calculateMultipleSamples } from '@/lib/calculations';
 import { SampleData, PollutionIndexResultWithML } from '@/types';
 import { formatNumber } from '@/lib/utils';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, AreaChart, Area } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
 import { jsPDF } from 'jspdf';
 import dynamic from 'next/dynamic';
-import { useTranslation } from 'react-i18next';
 
 // Dynamically import Leaflet components to avoid SSR issues
 const MapContainer = dynamic(
@@ -53,14 +52,6 @@ const SimpleMap = ({ samples }: { samples: SampleData[] }) => {
   // Default center for the map (India)
   const defaultCenter: [number, number] = [20.5937, 78.9629];
   const defaultZoom = 5;
-
-  // Calculate pollution intensity based on HPI for heatmap
-  const getPollutionIntensity = (hpi: number) => {
-    if (hpi < 100) return 10;
-    if (hpi < 200) return 20;
-    if (hpi < 300) return 30;
-    return 40;
-  };
 
   // Get color based on HPI value
   const getColorByHPI = (hpi: number) => {
@@ -149,7 +140,6 @@ export default function VisualizationPage() {
   const [activeTab, setActiveTab] = useState('map'); // 'map', 'timeseries', '3d'
   const router = useRouter();
   const samples = useSamplesStore((state: SampleStore) => state.samples);
-  const { t } = useTranslation();
 
   useEffect(() => {
     if (samples.length === 0) {
@@ -237,11 +227,11 @@ export default function VisualizationPage() {
     
     // Add title
     doc.setFontSize(20);
-    doc.text(t('home.title'), pageWidth / 2, 20, { align: 'center' });
+    doc.text('Pollution Visualization Report', pageWidth / 2, 20, { align: 'center' });
     
     // Add analysis type
     doc.setFontSize(12);
-    doc.text(`${t('common.analysisType')}: ${isMLAnalysis ? 'Machine Learning Enhanced' : 'Standard Calculation'}`, pageWidth / 2, 30, { align: 'center' });
+    doc.text(`Analysis Type: ${isMLAnalysis ? 'Machine Learning Enhanced' : 'Standard Calculation'}`, pageWidth / 2, 30, { align: 'center' });
     
     // Add summary statistics
     const safetyLevels = {
@@ -252,11 +242,11 @@ export default function VisualizationPage() {
     };
     
     doc.setFontSize(12);
-    doc.text(`${t('common.totalSamples')}: ${results.length}`, 20, 40);
-    doc.text(`${t('common.safe')}: ${safetyLevels.Safe}`, 20, 50);
-    doc.text(`${t('common.moderate')}: ${safetyLevels.Moderate}`, 20, 60);
-    doc.text(`${t('common.high')}: ${safetyLevels.High}`, 20, 70);
-    doc.text(`${t('common.critical')}: ${safetyLevels.Critical}`, 20, 80);
+    doc.text(`Total Samples: ${results.length}`, 20, 40);
+    doc.text(`Safe: ${safetyLevels.Safe}`, 20, 50);
+    doc.text(`Moderate: ${safetyLevels.Moderate}`, 20, 60);
+    doc.text(`High: ${safetyLevels.High}`, 20, 70);
+    doc.text(`Critical: ${safetyLevels.Critical}`, 20, 80);
     
     // Save the PDF
     doc.save('pollution-visualization-report.pdf');
@@ -267,7 +257,7 @@ export default function VisualizationPage() {
       <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto"></div>
-          <h2 className="mt-4 text-xl font-semibold text-gray-900">{t('home.step4')}</h2>
+          <h2 className="mt-4 text-xl font-semibold text-gray-900">Processing Visualization Data</h2>
           <p className="mt-2 text-gray-600">Processing {samples.length} samples</p>
           <p className="mt-2 text-gray-500 text-sm">{isMLAnalysis ? 'Using Machine Learning Models' : 'Using Standard Calculations'}</p>
         </div>
@@ -279,9 +269,9 @@ export default function VisualizationPage() {
     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-10">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('navigation.visualization')}</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Pollution Visualization</h1>
           <p className="text-gray-600">
-            {t('home.step4Desc')}
+            Interactive visualization of pollution data and trends
           </p>
           <p className="text-sm text-gray-500 mt-2">
             {isMLAnalysis ? 'Machine Learning Enhanced Analysis' : 'Standard Calculation Analysis'}
@@ -294,13 +284,13 @@ export default function VisualizationPage() {
             onClick={handleDownloadPDF}
             className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
           >
-            {t('common.downloadPDF')}
+            Download PDF Report
           </button>
           <button
             onClick={() => router.push('/results')}
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
           >
-            {t('common.backToResults')}
+            Back to Results
           </button>
         </div>
         
@@ -349,19 +339,19 @@ export default function VisualizationPage() {
               <div className="mt-4 flex flex-wrap gap-4">
                 <div className="flex items-center">
                   <div className="w-4 h-4 bg-green-500 rounded-full mr-2"></div>
-                  <span className="text-sm">{t('common.safe')} (&lt;100 HPI)</span>
+                  <span className="text-sm">Safe (&lt;100 HPI)</span>
                 </div>
                 <div className="flex items-center">
                   <div className="w-4 h-4 bg-orange-500 rounded-full mr-2"></div>
-                  <span className="text-sm">{t('common.moderate')} (100-200 HPI)</span>
+                  <span className="text-sm">Moderate (100-200 HPI)</span>
                 </div>
                 <div className="flex items-center">
                   <div className="w-4 h-4 bg-red-500 rounded-full mr-2"></div>
-                  <span className="text-sm">{t('common.high')} (200-300 HPI)</span>
+                  <span className="text-sm">High (200-300 HPI)</span>
                 </div>
                 <div className="flex items-center">
                   <div className="w-4 h-4 bg-black rounded-full mr-2"></div>
-                  <span className="text-sm">{t('common.critical')} (&gt;300 HPI)</span>
+                  <span className="text-sm">Critical (&gt;300 HPI)</span>
                 </div>
               </div>
             </>
@@ -388,17 +378,17 @@ export default function VisualizationPage() {
               
               <div className="h-96 mt-8">
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={timeSeriesData}>
+                  <BarChart data={timeSeriesData}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="time" />
                     <YAxis />
                     <Tooltip />
                     <Legend />
-                    <Area type="monotone" dataKey="hpi" stackId="1" stroke="#2563eb" fill="#2563eb" fillOpacity={0.6} name="HPI" />
-                    <Area type="monotone" dataKey="hei" stackId="1" stroke="#16a34a" fill="#16a34a" fillOpacity={0.6} name="HEI" />
-                    <Area type="monotone" dataKey="cd" stackId="1" stroke="#ea580c" fill="#ea580c" fillOpacity={0.6} name="Cd" />
-                    <Area type="monotone" dataKey="ef" stackId="1" stroke="#dc2626" fill="#dc2626" fillOpacity={0.6} name="EF" />
-                  </AreaChart>
+                    <Bar dataKey="hpi" stackId="1" stroke="#2563eb" fill="#2563eb" fillOpacity={0.6} name="HPI" />
+                    <Bar dataKey="hei" stackId="1" stroke="#16a34a" fill="#16a34a" fillOpacity={0.6} name="HEI" />
+                    <Bar dataKey="cd" stackId="1" stroke="#ea580c" fill="#ea580c" fillOpacity={0.6} name="Cd" />
+                    <Bar dataKey="ef" stackId="1" stroke="#dc2626" fill="#dc2626" fillOpacity={0.6} name="EF" />
+                  </BarChart>
                 </ResponsiveContainer>
               </div>
             </>
@@ -454,7 +444,7 @@ export default function VisualizationPage() {
           
           {/* Safety Level Distribution Pie Chart */}
           <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">{t('common.safetyLevel')} Distribution</h2>
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Safety Level Distribution</h2>
             <div className="h-80">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>

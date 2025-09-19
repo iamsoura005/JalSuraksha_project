@@ -1,10 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
 
 export default function CommunityReportingPage() {
-  const { t } = useTranslation();
   const [report, setReport] = useState({
     name: '',
     email: '',
