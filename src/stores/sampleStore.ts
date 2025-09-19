@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { SampleData } from '@/types';
 
-interface SampleStore {
+export interface SampleStore {
   samples: SampleData[];
   setSamples: (samples: SampleData[]) => void;
   addSample: (sample: SampleData) => void;

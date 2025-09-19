@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useSamplesStore } from '@/stores/sampleStore';
+import { useSamplesStore, SampleStore } from '@/stores/sampleStore';
 import { SampleData, PollutionIndexResult } from '@/types';
 import { calculateHPI, calculateHEI, calculateCd } from '@/lib/calculations';
 import { generateId } from '@/lib/utils';
@@ -56,7 +56,7 @@ interface ReportData {
 }
 
 export default function ReportsPage() {
-  const samples = useSamplesStore((state: any) => state.samples);
+  const samples = useSamplesStore((state: SampleStore) => state.samples);
   const [reports, setReports] = useState<ReportData[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<string>('default');
   const [alerts, setAlerts] = useState<Alert[]>([]);

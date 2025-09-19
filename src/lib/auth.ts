@@ -2,32 +2,6 @@ import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import bcrypt from 'bcryptjs';
 import { User } from '@/types';
-import { JWT } from "next-auth/jwt";
-import { Session } from "next-auth";
-
-// Extend the built-in User type with our custom properties
-declare module "next-auth" {
-  interface User {
-    role?: string;
-  }
-
-  interface Session {
-    user: {
-      id?: string;
-      role?: string;
-      name?: string | null;
-      email?: string | null;
-      image?: string | null;
-    }
-  }
-}
-
-declare module "next-auth/jwt" {
-  interface JWT {
-    id?: string;
-    role?: string;
-  }
-}
 
 // Mock user database (in a real app, this would be a real database)
 const users: User[] = [
@@ -74,8 +48,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         return {
           id: user.id,
           name: user.name,
-          email: user.email,
-          role: user.role
+          email: user.email
+          // Note: role is not included in the default User type
         };
       }
     })
@@ -87,14 +61,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-        token.role = user.role;
+        // We can't add role to token because it's not in the default User type
       }
       return token;
     },
     async session({ session, token }) {
       if (token && session.user) {
         session.user.id = token.id as string;
-        session.user.role = token.role as string;
+        // We can't add role to session because it's not in the default User type
       }
       return session;
     }
