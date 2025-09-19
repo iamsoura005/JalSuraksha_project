@@ -21,12 +21,22 @@ export const loadEnhancedMLModels = async (): Promise<{
   preprocessingParams: PreprocessingParams | null;
 }> => {
   try {
+    console.log('Attempting to load enhanced ML models...');
+    
     // Load primary models
+    console.log('Loading regression model from /models/heavy_metal_model.json');
     regressionModel = await tf.loadLayersModel('/models/heavy_metal_model.json');
+    
+    console.log('Loading classification model from /models/safety_classifier.json');
     classificationModel = await tf.loadLayersModel('/models/safety_classifier.json');
     
     // Load anomaly detection model
-    anomalyDetectionModel = await tf.loadLayersModel('/models/anomaly_detector.json');
+    console.log('Loading anomaly detection model from /models/anomaly_detector.json');
+    try {
+      anomalyDetectionModel = await tf.loadLayersModel('/models/anomaly_detector.json');
+    } catch (error) {
+      console.warn('Failed to load anomaly detection model:', error);
+    }
     
     // Load ensemble models (multiple models for ensemble prediction)
     const modelPaths = [
@@ -38,6 +48,7 @@ export const loadEnhancedMLModels = async (): Promise<{
     ensembleModels = [];
     for (const path of modelPaths) {
       try {
+        console.log(`Loading ensemble model from ${path}`);
         const model = await tf.loadLayersModel(path);
         ensembleModels.push(model);
       } catch (error) {
@@ -46,7 +57,11 @@ export const loadEnhancedMLModels = async (): Promise<{
     }
     
     // Load preprocessing parameters
+    console.log('Loading preprocessing parameters from /models/preprocessing_params.json');
     const response = await fetch('/models/preprocessing_params.json');
+    if (!response.ok) {
+      throw new Error(`Failed to load preprocessing params: ${response.status} ${response.statusText}`);
+    }
     preprocessingParams = await response.json();
     
     modelsLoaded = true;
@@ -123,6 +138,14 @@ export const ensemblePredict = async (inputTensor: tf.Tensor, models: tf.LayersM
  * Detect anomalies in the sample data
  */
 export const detectAnomalies = async (sampleData: SampleData): Promise<{isAnomaly: boolean; anomalyScore: number}> => {
+  // Check if models are loaded in browser environment
+  if (typeof window === 'undefined') {
+    console.warn('ML models not available in server environment');
+    return { isAnomaly: false, anomalyScore: 0 };
+  }
+  
+  const { anomalyDetectionModel, preprocessingParams, modelsLoaded } = getEnhancedLoadedModels();
+  
   if (!modelsLoaded || !anomalyDetectionModel || !preprocessingParams) {
     console.warn('Anomaly detection model not loaded');
     return { isAnomaly: false, anomalyScore: 0 };
@@ -176,6 +199,28 @@ export const predictPollutionIndexEnhanced = async (sampleData: SampleData): Pro
   ensembleHPI: number | null;
   confidence: number | null;
 }> => {
+  // Check if models are loaded in browser environment
+  if (typeof window === 'undefined') {
+    console.warn('ML models not available in server environment');
+    return { 
+      hpi: null, 
+      safetyLevel: null, 
+      isAnomaly: false, 
+      anomalyScore: 0,
+      ensembleHPI: null,
+      confidence: null
+    };
+  }
+  
+  const { 
+    regressionModel, 
+    classificationModel, 
+    anomalyDetectionModel, 
+    ensembleModels, 
+    preprocessingParams, 
+    modelsLoaded 
+  } = getEnhancedLoadedModels();
+  
   if (!modelsLoaded || !regressionModel || !classificationModel || !preprocessingParams) {
     console.warn('Enhanced ML models not loaded, falling back to calculation');
     return { 

@@ -106,7 +106,7 @@ export default function UploadPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50/30 backdrop-blur-sm py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-3xl mx-auto">
         <div className="text-center mb-10">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Upload Data</h1>
@@ -116,8 +116,8 @@ export default function UploadPage() {
         </div>
         
         <div 
-          className={`relative border-2 border-dashed rounded-lg p-12 text-center cursor-pointer transition-colors ${
-            dragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400'
+          className={`relative border-2 border-dashed rounded-lg p-12 text-center cursor-pointer transition-colors backdrop-blur-sm ${
+            dragActive ? 'border-blue-500 bg-blue-50/50' : 'border-gray-300 hover:border-gray-400 bg-white/30'
           }`}
           onDragEnter={handleDrag}
           onDragLeave={handleDrag}
@@ -166,7 +166,7 @@ export default function UploadPage() {
         </div>
         
         {file && (
-          <div className="mt-6 bg-white rounded-lg shadow p-4">
+          <div className="mt-6 bg-white/30 backdrop-blur-sm rounded-lg shadow p-4 border border-white/20">
             <div className="flex justify-between items-center">
               <div>
                 <p className="font-medium text-gray-900">{file.name}</p>
@@ -185,7 +185,7 @@ export default function UploadPage() {
         )}
         
         {error && (
-          <div className="mt-4 p-4 bg-red-50 rounded-lg">
+          <div className="mt-4 p-4 bg-red-50/50 backdrop-blur-sm rounded-lg border border-red-200/30">
             <p className="text-red-800 text-sm">{error}</p>
           </div>
         )}
@@ -193,7 +193,7 @@ export default function UploadPage() {
         <div className="mt-8 flex justify-center gap-4">
           <button
             onClick={() => router.back()}
-            className="px-6 py-3 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+            className="px-6 py-3 border border-gray-300/30 rounded-md text-gray-700 hover:bg-gray-50/50 backdrop-blur-sm"
           >
             Back
           </button>
@@ -203,30 +203,30 @@ export default function UploadPage() {
             disabled={!file || loading}
             className={`px-6 py-3 rounded-md text-white ${
               !file || loading 
-                ? 'bg-gray-400 cursor-not-allowed' 
-                : 'bg-blue-600 hover:bg-blue-700'
+                ? 'bg-gray-400/50 cursor-not-allowed backdrop-blur-sm' 
+                : 'bg-blue-600/80 hover:bg-blue-700/80 backdrop-blur-sm border border-blue-300/30'
             }`}
           >
             {loading ? 'Processing...' : 'Next'}
           </button>
         </div>
         
-        <div className="mt-10 bg-blue-50 rounded-lg p-6">
+        <div className="mt-10 bg-blue-50/50 backdrop-blur-sm rounded-lg p-6 border border-blue-200/30">
           <h3 className="font-medium text-gray-900 mb-2">Expected File Format</h3>
           <p className="text-sm text-gray-600 mb-3">
             Your file should contain the following columns:
           </p>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 text-xs">
-            <div className="bg-white p-2 rounded text-center">Sample_ID</div>
-            <div className="bg-white p-2 rounded text-center">Latitude</div>
-            <div className="bg-white p-2 rounded text-center">Longitude</div>
-            <div className="bg-white p-2 rounded text-center">Lead_ppm</div>
-            <div className="bg-white p-2 rounded text-center">Arsenic_ppm</div>
-            <div className="bg-white p-2 rounded text-center">Cadmium_ppm</div>
-            <div className="bg-white p-2 rounded text-center">Chromium_ppm</div>
-            <div className="bg-white p-2 rounded text-center">Copper_ppm</div>
-            <div className="bg-white p-2 rounded text-center">Iron_ppm</div>
-            <div className="bg-white p-2 rounded text-center">Zinc_ppm</div>
+            <div className="bg-white/50 backdrop-blur-sm p-2 rounded text-center border border-white/30">Sample_ID</div>
+            <div className="bg-white/50 backdrop-blur-sm p-2 rounded text-center border border-white/30">Latitude</div>
+            <div className="bg-white/50 backdrop-blur-sm p-2 rounded text-center border border-white/30">Longitude</div>
+            <div className="bg-white/50 backdrop-blur-sm p-2 rounded text-center border border-white/30">Lead_ppm</div>
+            <div className="bg-white/50 backdrop-blur-sm p-2 rounded text-center border border-white/30">Arsenic_ppm</div>
+            <div className="bg-white/50 backdrop-blur-sm p-2 rounded text-center border border-white/30">Cadmium_ppm</div>
+            <div className="bg-white/50 backdrop-blur-sm p-2 rounded text-center border border-white/30">Chromium_ppm</div>
+            <div className="bg-white/50 backdrop-blur-sm p-2 rounded text-center border border-white/30">Copper_ppm</div>
+            <div className="bg-white/50 backdrop-blur-sm p-2 rounded text-center border border-white/30">Iron_ppm</div>
+            <div className="bg-white/50 backdrop-blur-sm p-2 rounded text-center border border-white/30">Zinc_ppm</div>
           </div>
         </div>
       </div>

@@ -8,7 +8,7 @@
         {
           "class_name": "Dense",
           "config": {
-            "units": 64,
+            "units": 32,
             "activation": "relu",
             "input_shape": [7]
           }
@@ -16,7 +16,7 @@
         {
           "class_name": "Dense",
           "config": {
-            "units": 32,
+            "units": 16,
             "activation": "relu"
           }
         },
@@ -24,7 +24,7 @@
           "class_name": "Dense",
           "config": {
             "units": 1,
-            "activation": "linear"
+            "activation": "sigmoid"
           }
         }
       ]
@@ -32,7 +32,7 @@
   },
   "weightsManifest": [
     {
-      "paths": ["./heavy_metal_model_weights.bin"],
+      "paths": ["./anomaly_detector_weights.bin"],
       "weights": []
     }
   ]

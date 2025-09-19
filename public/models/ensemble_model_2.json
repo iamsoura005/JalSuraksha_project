@@ -8,7 +8,7 @@
         {
           "class_name": "Dense",
           "config": {
-            "units": 64,
+            "units": 128,
             "activation": "relu",
             "input_shape": [7]
           }
@@ -16,7 +16,7 @@
         {
           "class_name": "Dense",
           "config": {
-            "units": 32,
+            "units": 64,
             "activation": "relu"
           }
         },
@@ -32,7 +32,7 @@
   },
   "weightsManifest": [
     {
-      "paths": ["./heavy_metal_model_weights.bin"],
+      "paths": ["./ensemble_model_2_weights.bin"],
       "weights": []
     }
   ]

@@ -102,13 +102,15 @@ const VoiceInput = ({ onResult }: { onResult: (text: string) => void }) => {
       <button
         type="button"
         onClick={toggleListening}
-        className={`px-3 py-1 rounded-md text-sm ${
+        className={`p-2 rounded-full ${
           isListening 
             ? 'bg-red-500 hover:bg-red-600 text-white' 
             : 'bg-blue-500 hover:bg-blue-600 text-white'
         }`}
       >
-        {isListening ? 'Stop' : 'Voice Input'}
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+          <path fillRule="evenodd" d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8a1 1 0 10-2 0A5 5 0 015 8a1 1 0 00-2 0 7.001 7.001 0 006 6.93V17H6a1 1 0 100 2h8a1 1 0 100-2h-3v-2.07z" clipRule="evenodd" />
+        </svg>
       </button>
       {transcript && (
         <span className="text-sm text-gray-600 truncate max-w-xs">{transcript}</span>
@@ -310,7 +312,7 @@ export default function ManualEntryPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50/30 to-green-50/30 backdrop-blur-sm py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-10">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Manual Data Entry</h1>
@@ -319,7 +321,7 @@ export default function ManualEntryPage() {
           </p>
           <button
             onClick={getCurrentLocation}
-            className="mt-2 px-4 py-2 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 text-sm"
+            className="mt-2 px-4 py-2 bg-blue-100/50 backdrop-blur-sm text-blue-700 rounded-md hover:bg-blue-200/50 text-sm border border-blue-200/30 shadow-sm"
           >
             Get Current Location
           </button>
@@ -330,7 +332,7 @@ export default function ManualEntryPage() {
         
         <div className="space-y-6">
           {samples.map((sample, index) => (
-            <div key={sample.id} className="bg-white rounded-lg shadow p-6">
+            <div key={sample.id} className="bg-white/30 backdrop-blur-sm rounded-xl shadow-lg border border-white/20 p-6">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-lg font-medium text-black-900">Sample {index + 1}</h2>
                 {samples.length > 1 && (
@@ -353,7 +355,7 @@ export default function ManualEntryPage() {
                       type="text"
                       value={sample.sampleId}
                       onChange={(e) => handleInputChange(sample.id, 'sampleId', e.target.value)}
-                      className={`flex-1 px-3 py-2 border rounded-md ${
+                      className={`flex-1 px-3 py-2 border rounded-md bg-white/50 backdrop-blur-sm border-white/30 ${
                         errors[`${sample.id}-sampleId`] ? 'border-red-500' : 'border-gray-300'
                       }`}
                       placeholder="Enter sample ID"
@@ -376,7 +378,7 @@ export default function ManualEntryPage() {
                         step="any"
                         value={sample.latitude}
                         onChange={(e) => handleInputChange(sample.id, 'latitude', parseFloat(e.target.value) || 0)}
-                        className={`flex-1 px-3 py-2 border rounded-md ${
+                        className={`flex-1 px-3 py-2 border rounded-md bg-white/50 backdrop-blur-sm border-white/30 ${
                           errors[`${sample.id}-latitude`] ? 'border-red-500' : 'border-gray-300'
                         }`}
                         placeholder="Enter latitude"
@@ -398,7 +400,7 @@ export default function ManualEntryPage() {
                         step="any"
                         value={sample.longitude}
                         onChange={(e) => handleInputChange(sample.id, 'longitude', parseFloat(e.target.value) || 0)}
-                        className={`flex-1 px-3 py-2 border rounded-md ${
+                        className={`flex-1 px-3 py-2 border rounded-md bg-white/50 backdrop-blur-sm border-white/30 ${
                           errors[`${sample.id}-longitude`] ? 'border-red-500' : 'border-gray-300'
                         }`}
                         placeholder="Enter longitude"
@@ -431,7 +433,7 @@ export default function ManualEntryPage() {
                           <button
                             type="button"
                             onClick={() => decrementMetal(sample.id, key)}
-                            className="px-2 py-1 bg-gray-200 text-gray-700 rounded-l-md hover:bg-gray-300"
+                            className="px-2 py-1 bg-gray-200/50 backdrop-blur-sm text-gray-700 rounded-l-md hover:bg-gray-300/50 border border-gray-300/30"
                           >
                             -
                           </button>
@@ -443,7 +445,7 @@ export default function ManualEntryPage() {
                               max="10"
                               value={sample[key]}
                               onChange={(e) => handleInputChange(sample.id, key, parseFloat(e.target.value) || 0)}
-                              className={`w-full px-2 py-1 text-sm border-t border-b border-gray-300 text-center ${
+                              className={`w-full px-2 py-1 text-sm border-t border-b bg-white/50 backdrop-blur-sm border-gray-300/30 text-center ${
                                 errors[`${sample.id}-${key}`] ? 'border-red-500' : 'border-gray-300'
                               }`}
                               placeholder={`0 ${unit}`}
@@ -453,7 +455,7 @@ export default function ManualEntryPage() {
                           <button
                             type="button"
                             onClick={() => incrementMetal(sample.id, key)}
-                            className="px-2 py-1 bg-gray-200 text-gray-700 rounded-r-md hover:bg-gray-300"
+                            className="px-2 py-1 bg-gray-200/50 backdrop-blur-sm text-gray-700 rounded-r-md hover:bg-gray-300/50 border border-gray-300/30"
                           >
                             +
                           </button>
@@ -474,14 +476,14 @@ export default function ManualEntryPage() {
           <div className="flex gap-4">
             <button
               onClick={addSample}
-              className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300"
+              className="px-4 py-2 bg-gray-200/50 backdrop-blur-sm text-gray-800 rounded-md hover:bg-gray-300/50 border border-gray-300/30 shadow-sm"
             >
               Add Another Sample
             </button>
             
             <button
               onClick={() => router.back()}
-              className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+              className="px-4 py-2 border border-gray-300/30 rounded-md text-gray-700 hover:bg-gray-50/50 backdrop-blur-sm shadow-sm"
             >
               Back
             </button>
@@ -489,7 +491,7 @@ export default function ManualEntryPage() {
           
           <button
             onClick={handleSubmit}
-            className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            className="px-6 py-2 bg-blue-600/80 backdrop-blur-sm text-white rounded-md hover:bg-blue-700/80 border border-blue-300/30 shadow-sm"
           >
             Calculate Pollution Indices
           </button>

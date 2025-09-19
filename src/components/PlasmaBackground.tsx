@@ -3,9 +3,9 @@
 import Plasma from './Plasma';
 
 export default function PlasmaBackground({ 
-  color = '#ff6b35',
+  color = '#2f3bad',
   speed = 0.6,
-  direction = 'forward',
+  direction = 'downward',
   scale = 1.1,
   opacity = 0.8,
   mouseInteractive = true

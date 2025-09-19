@@ -16,14 +16,22 @@ export const loadMLModels = async (): Promise<{
   preprocessingParams: PreprocessingParams | null;
 }> => {
   try {
+    console.log('Attempting to load ML models...');
+    
     // Load regression model for pollution index prediction
+    console.log('Loading regression model from /models/heavy_metal_model.json');
     regressionModel = await tf.loadLayersModel('/models/heavy_metal_model.json');
     
     // Load classification model for safety level prediction
+    console.log('Loading classification model from /models/safety_classifier.json');
     classificationModel = await tf.loadLayersModel('/models/safety_classifier.json');
     
     // Load preprocessing parameters
+    console.log('Loading preprocessing parameters from /models/preprocessing_params.json');
     const response = await fetch('/models/preprocessing_params.json');
+    if (!response.ok) {
+      throw new Error(`Failed to load preprocessing params: ${response.status} ${response.statusText}`);
+    }
     preprocessingParams = await response.json();
     
     modelsLoaded = true;
@@ -62,6 +70,14 @@ export const preprocessData = (data: number[], params: PreprocessingParams): num
  * Predict pollution index using ML model
  */
 export const predictPollutionIndex = async (sampleData: SampleData): Promise<{hpi: number | null, safetyLevel: string | null}> => {
+  // Check if models are loaded in browser environment
+  if (typeof window === 'undefined') {
+    console.warn('ML models not available in server environment');
+    return { hpi: null, safetyLevel: null };
+  }
+  
+  const { regressionModel, classificationModel, preprocessingParams, modelsLoaded } = getLoadedModels();
+  
   if (!modelsLoaded || !regressionModel || !classificationModel || !preprocessingParams) {
     console.warn('ML models not loaded, falling back to calculation');
     return { hpi: null, safetyLevel: null };
@@ -112,7 +128,7 @@ export const predictPollutionIndex = async (sampleData: SampleData): Promise<{hp
 /**
  * Calculate pollution indices with ML enhancement
  */
-export const calculatePollutionIndicesWithML = async (sample: SampleData) => {
+export const calculatePollutionIndices = async (sample: SampleData) => {
   // Try to get predictions from ML models
   const { hpi: mlHpi, safetyLevel: mlSafetyLevel } = await predictPollutionIndex(sample);
   
@@ -130,7 +146,7 @@ export const calculatePollutionIndicesWithML = async (sample: SampleData) => {
   }
   
   // Fall back to calculation-based approach
-  return calculatePollutionIndices(sample);
+  return calculatePollutionIndicesFallback(sample);
 };
 
 // Import calculation functions
@@ -199,7 +215,7 @@ const calculateEF = (sample: SampleData): number => {
   return efValues.reduce((sum, ef) => sum + ef, 0) / efValues.length;
 };
 
-const calculatePollutionIndices = (sample: SampleData) => {
+const calculatePollutionIndicesFallback = (sample: SampleData) => {
   const hpi = calculateHPI(sample);
   const hei = calculateHEI(sample);
   const cd = calculateCd(sample);

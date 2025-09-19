@@ -32,7 +32,7 @@
   },
   "weightsManifest": [
     {
-      "paths": ["./heavy_metal_model_weights.bin"],
+      "paths": ["./ensemble_model_1_weights.bin"],
       "weights": []
     }
   ]
