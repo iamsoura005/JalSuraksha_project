@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Renderer, Program, Mesh, Triangle } from 'ogl';
 import './Plasma.css';
 
@@ -92,27 +92,76 @@ export const Plasma = ({
 }) => {
   const containerRef = useRef(null);
   const mousePos = useRef({ x: 0, y: 0 });
+  const [renderError, setRenderError] = useState(false);
 
   useEffect(() => {
     if (!containerRef.current) return;
+    
+    // Safety check for window object (SSR compatibility)
+    if (typeof window === 'undefined') return;
+    
+    // Check for WebGL support
+    try {
+      const canvas = document.createElement('canvas');
+      const hasWebGL2 = !!window.WebGL2RenderingContext && 
+                       (canvas.getContext('webgl2') || canvas.getContext('experimental-webgl2'));
+      const hasWebGL1 = !!window.WebGLRenderingContext && 
+                       (canvas.getContext('webgl') || canvas.getContext('experimental-webgl'));
+      
+      if (!hasWebGL2 && !hasWebGL1) {
+        console.error('WebGL not supported in this browser');
+        setRenderError(true);
+        return;
+      }
+    } catch (e) {
+      console.error('Error checking WebGL support:', e);
+      setRenderError(true);
+      return;
+    }
 
     const useCustomColor = color ? 1.0 : 0.0;
     const customColorRgb = color ? hexToRgb(color) : [1, 1, 1];
 
     const directionMultiplier = direction === 'reverse' ? -1.0 : 1.0;
-
-    const renderer = new Renderer({
-      webgl: 2,
-      alpha: true,
-      antialias: false,
-      dpr: Math.min(window.devicePixelRatio || 1, 2)
-    });
+    
+    // Try to create renderer with WebGL2 first, fall back to WebGL1
+    let renderer;
+    try {
+      renderer = new Renderer({
+        webgl: 2,
+        alpha: true,
+        antialias: false,
+        dpr: Math.min(window.devicePixelRatio || 1, 1.5) // Limit DPR for better performance
+      });
+    } catch (e) {
+      console.warn('WebGL2 not supported, trying WebGL1:', e);
+      try {
+        renderer = new Renderer({
+          webgl: 1,
+          alpha: true,
+          antialias: false,
+          dpr: 1 // Use lowest DPR for compatibility
+        });
+      } catch (e2) {
+        console.error('Failed to initialize WebGL renderer:', e2);
+        setRenderError(true);
+        return;
+      }
+    }
+    
     const gl = renderer.gl;
     const canvas = gl.canvas;
     canvas.style.display = 'block';
     canvas.style.width = '100%';
     canvas.style.height = '100%';
-    containerRef.current.appendChild(canvas);
+    
+    try {
+      containerRef.current.appendChild(canvas);
+    } catch (e) {
+      console.error('Failed to append canvas to container:', e);
+      setRenderError(true);
+      return;
+    }
 
     const geometry = new Triangle(gl);
 
@@ -194,7 +243,13 @@ export const Plasma = ({
     };
   }, [color, speed, direction, scale, opacity, mouseInteractive]);
 
+  if (renderError) {
+    // Fallback to a simple gradient if WebGL rendering fails
+    return <div className="plasma-container bg-gradient-to-b from-blue-900/50 to-indigo-900/50" />;
+  }
+  
   return <div ref={containerRef} className="plasma-container" />;
+
 };
 
 export default Plasma;

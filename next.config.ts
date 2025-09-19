@@ -7,7 +7,23 @@ const nextConfig: NextConfig = {
   // Configure image optimization
   images: {
     domains: [],
+    unoptimized: true, // Helps with static exports
   },
-};
+  // Improve static file handling
+  output: 'standalone', // Optimized for production deployments
+  // Disable unnecessary features in production
+  swcMinify: true, // Use SWC for minification
+  // Improve production performance
+  poweredByHeader: false, // Remove X-Powered-By header
+  // Configure compression
+  compress: true,
+  // Webpack configuration to handle WebGL
+  webpack: (config) => {
+    // Ignore specific warnings that might be related to WebGL
+    config.ignoreWarnings = [
+      { module: /node_modules\/ogl/ },
+    ];
+    return config;
+  },
 
 export default nextConfig;

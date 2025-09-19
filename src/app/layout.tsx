@@ -37,17 +37,23 @@ export default function RootLayout({
         <script
           dangerouslySetInnerHTML={{
             __html: `
-              if ('serviceWorker' in navigator) {
-                window.addEventListener('load', function() {
-                  navigator.serviceWorker.register('/sw.js')
-                    .then(function(registration) {
-                      console.log('ServiceWorker registration successful with scope: ', registration.scope);
-                    })
-                    .catch(function(err) {
-                      console.log('ServiceWorker registration failed: ', err);
-                    });
-                });
-              }
+              // Delay service worker registration to ensure page renders first
+              window.addEventListener('load', function() {
+                // Check if service workers are supported
+                if ('serviceWorker' in navigator) {
+                  // Add a small delay to prioritize rendering
+                  setTimeout(() => {
+                    navigator.serviceWorker.register('/sw.js')
+                      .then(registration => {
+                        console.log('Service Worker registered with scope:', registration.scope);
+                      })
+                      .catch(error => {
+                        console.error('Service Worker registration failed:', error);
+                        // Continue without service worker
+                      });
+                  }, 1000);
+                }
+              });
             `,
           }}
         />
