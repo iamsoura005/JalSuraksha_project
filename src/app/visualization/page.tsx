@@ -50,8 +50,10 @@ interface SampleStore {
 // Simple map component placeholder
 const SimpleMap = ({ samples }: { samples: SampleData[] }) => {
   // Default center for the map (India)
-  const defaultCenter: [number, number] = [20.5937, 78.9629];
-  const defaultZoom = 5;
+  const defaultCenter: [number, number] = samples.length > 0 
+    ? [samples[0].latitude, samples[0].longitude] 
+    : [20.5937, 78.9629];
+  const defaultZoom = samples.length > 0 ? 12 : 5;
 
   // Get color based on HPI value
   const getColorByHPI = (hpi: number) => {
@@ -62,13 +64,13 @@ const SimpleMap = ({ samples }: { samples: SampleData[] }) => {
   };
 
   return (
-    <div className="bg-gray-100 border border-gray-300 rounded-lg h-96 w-full">
+    <div className="bg-gray-100/30 backdrop-blur-sm border border-gray-300/30 rounded-lg h-96 w-full relative">
       {typeof window !== 'undefined' ? (
         <MapContainer 
           center={defaultCenter} 
           zoom={defaultZoom} 
           style={{ height: '100%', width: '100%' }}
-          className="rounded-lg"
+          className="rounded-lg absolute top-0 left-0 bottom-0 right-0"
         >
           <TileLayer
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -105,7 +107,7 @@ const SimpleMap = ({ samples }: { samples: SampleData[] }) => {
 // 3D Visualization Component
 const Pollution3DVisualization = ({ data }: { data: PollutionIndexResultWithML[] }) => {
   return (
-    <div className="bg-gray-100 border border-gray-300 rounded-lg h-96 w-full flex items-center justify-center">
+    <div className="bg-gray-100/30 backdrop-blur-sm border border-gray-300/30 rounded-lg h-96 w-full flex items-center justify-center">
       {typeof window !== 'undefined' ? (
         <Canvas>
           <ambientLight intensity={0.5} />
@@ -254,7 +256,7 @@ export default function VisualizationPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center">
+      <div className="min-h-screen bg-gray-50/30 backdrop-blur-sm flex flex-col items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto"></div>
           <h2 className="mt-4 text-xl font-semibold text-gray-900">Processing Visualization Data</h2>
@@ -266,7 +268,7 @@ export default function VisualizationPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50/30 backdrop-blur-sm py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-10">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Pollution Visualization</h1>
@@ -282,20 +284,20 @@ export default function VisualizationPage() {
         <div className="flex justify-center gap-4 mb-8">
           <button
             onClick={handleDownloadPDF}
-            className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+            className="px-4 py-2 bg-red-600/80 backdrop-blur-sm text-white rounded-md hover:bg-red-700/80 border border-red-300/30 shadow-sm"
           >
             Download PDF Report
           </button>
           <button
             onClick={() => router.push('/results')}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            className="px-4 py-2 bg-blue-600/80 backdrop-blur-sm text-white rounded-md hover:bg-blue-700/80 border border-blue-300/30 shadow-sm"
           >
             Back to Results
           </button>
         </div>
         
         {/* Visualization Tabs */}
-        <div className="mb-6 border-b border-gray-200">
+        <div className="mb-6 border-b border-gray-200/30">
           <nav className="-mb-px flex space-x-8">
             <button
               onClick={() => setActiveTab('map')}
@@ -331,7 +333,7 @@ export default function VisualizationPage() {
         </div>
         
         {/* Visualization Content */}
-        <div className="bg-white rounded-lg shadow p-6 mb-8">
+        <div className="bg-white/30 backdrop-blur-sm rounded-lg shadow p-6 mb-8 border border-white/20">
           {activeTab === 'map' && (
             <>
               <h2 className="text-xl font-semibold text-gray-900 mb-4">Pollution Heat Map</h2>
@@ -426,7 +428,7 @@ export default function VisualizationPage() {
         {/* Charts Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
           {/* HPI Distribution Bar Chart */}
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-white/30 backdrop-blur-sm rounded-lg shadow p-6 border border-white/20">
             <h2 className="text-xl font-semibold text-gray-900 mb-4">HPI Distribution</h2>
             <div className="h-80">
               <ResponsiveContainer width="100%" height="100%">
@@ -443,7 +445,7 @@ export default function VisualizationPage() {
           </div>
           
           {/* Safety Level Distribution Pie Chart */}
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-white/30 backdrop-blur-sm rounded-lg shadow p-6 border border-white/20">
             <h2 className="text-xl font-semibold text-gray-900 mb-4">Safety Level Distribution</h2>
             <div className="h-80">
               <ResponsiveContainer width="100%" height="100%">
@@ -472,7 +474,7 @@ export default function VisualizationPage() {
         </div>
         
         {/* Pollution Indices Comparison */}
-        <div className="bg-white rounded-lg shadow p-6 mb-8">
+        <div className="bg-white/30 backdrop-blur-sm rounded-lg shadow p-6 mb-8 border border-white/20">
           <h2 className="text-xl font-semibold text-gray-900 mb-4">Pollution Indices Comparison</h2>
           <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">

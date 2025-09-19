@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import "leaflet/dist/leaflet.css";
 import Navigation from "@/components/Navigation";
 import { I18nProvider } from "@/components/I18nProvider";
 import PlasmaBackground from "@/components/PlasmaBackground";
@@ -16,7 +17,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="antialiased min-h-screen bg-gray-50">
+      <body className="antialiased min-h-screen bg-transparent">
         <PlasmaBackground 
           color="#ff6b35"
           speed={0.6}
