@@ -1,0 +1,43 @@
+{
+  "navigation": {
+    "home": "Home",
+    "upload": "Upload",
+    "manualEntry": "Manual Entry",
+    "results": "Results",
+    "visualization": "Visualization"
+  },
+  "home": {
+    "title": "Jalsurakhsa",
+    "description": "Upload groundwater test data or enter values manually to calculate pollution indices and assess environmental risks",
+    "uploadData": "Upload Data (CSV/Excel)",
+    "enterData": "Enter Data Manually",
+    "hpiCalculation": "HPI Calculation",
+    "mlAnalysis": "ML-Powered Analysis",
+    "visualReports": "Visual Reports",
+    "howItWorks": "How It Works",
+    "step1": "Upload or Enter Data",
+    "step1Desc": "Provide groundwater test results via file upload or manual entry",
+    "step2": "Calculate Indices",
+    "step2Desc": "System computes HPI, HEI, Cd, and EF values",
+    "step3": "View Results",
+    "step3Desc": "See detailed analysis with safety classifications",
+    "step4": "Visualize Data",
+    "step4Desc": "Interactive charts and maps for better understanding"
+  },
+  "common": {
+    "safe": "Safe",
+    "moderate": "Moderate",
+    "high": "High",
+    "critical": "Critical",
+    "downloadPDF": "Download PDF Report",
+    "backToResults": "Back to Results",
+    "sampleId": "Sample ID",
+    "hpi": "HPI",
+    "hei": "HEI",
+    "cd": "Cd",
+    "ef": "EF",
+    "safetyLevel": "Safety Level",
+    "analysisType": "Analysis Type",
+    "totalSamples": "Total Samples"
+  }
+}
