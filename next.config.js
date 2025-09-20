@@ -10,8 +10,6 @@ const nextConfig = {
   },
   // Improve static file handling
   output: 'standalone', // Optimized for production deployments
-  // Disable unnecessary features in production
-  swcMinify: true, // Use SWC for minification
   // Improve production performance
   poweredByHeader: false, // Remove X-Powered-By header
   // Configure compression

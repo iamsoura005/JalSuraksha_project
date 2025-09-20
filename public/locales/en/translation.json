@@ -7,7 +7,7 @@
     "visualization": "Visualization"
   },
   "home": {
-    "title": "Jalsurakhsa",
+    "title": "JalSuraksha",
     "description": "Upload groundwater test data or enter values manually to calculate pollution indices and assess environmental risks",
     "uploadData": "Upload Data (CSV/Excel)",
     "enterData": "Enter Data Manually",

@@ -38,6 +38,25 @@ export default function AdvancedAnalysisPage() {
   const [scenarioResults, setScenarioResults] = useState<ScenarioResult[]>([]);
   const [activeTab, setActiveTab] = useState<'correlation' | 'sources' | 'risk' | 'scenarios'>('correlation');
 
+  // Calculate Pearson correlation coefficient
+  const calculatePearsonCorrelation = useCallback((x: number[], y: number[]): number => {
+    const n = x.length;
+    if (n !== y.length || n === 0) return 0;
+    
+    const sumX = x.reduce((a, b) => a + b, 0);
+    const sumY = y.reduce((a, b) => a + b, 0);
+    const sumXY = x.map((xi, i) => xi * y[i]).reduce((a, b) => a + b, 0);
+    const sumX2 = x.map(xi => xi * xi).reduce((a, b) => a + b, 0);
+    const sumY2 = y.map(yi => yi * yi).reduce((a, b) => a + b, 0);
+    
+    const numerator = n * sumXY - sumX * sumY;
+    const denominator = Math.sqrt((n * sumX2 - sumX * sumX) * (n * sumY2 - sumY * sumY));
+    
+    if (denominator === 0) return 0;
+    
+    return numerator / denominator;
+  }, []);
+
   // Calculate correlations between metals
   const calculateCorrelations = useCallback(() => {
     if (samples.length === 0) return [];
@@ -69,26 +88,7 @@ export default function AdvancedAnalysisPage() {
     }
     
     return results.sort((a, b) => Math.abs(b.correlation) - Math.abs(a.correlation));
-  }, [samples]);
-
-  // Calculate Pearson correlation coefficient
-  const calculatePearsonCorrelation = useCallback((x: number[], y: number[]): number => {
-    const n = x.length;
-    if (n !== y.length || n === 0) return 0;
-    
-    const sumX = x.reduce((a, b) => a + b, 0);
-    const sumY = y.reduce((a, b) => a + b, 0);
-    const sumXY = x.map((xi, i) => xi * y[i]).reduce((a, b) => a + b, 0);
-    const sumX2 = x.map(xi => xi * xi).reduce((a, b) => a + b, 0);
-    const sumY2 = y.map(yi => yi * yi).reduce((a, b) => a + b, 0);
-    
-    const numerator = n * sumXY - sumX * sumY;
-    const denominator = Math.sqrt((n * sumX2 - sumX * sumX) * (n * sumY2 - sumY * sumY));
-    
-    if (denominator === 0) return 0;
-    
-    return numerator / denominator;
-  }, []);
+  }, [samples, calculatePearsonCorrelation]);
 
   // Identify likely sources of contamination
   const identifySources = useCallback(() => {
@@ -201,7 +201,7 @@ export default function AdvancedAnalysisPage() {
     ];
     
     return results;
-  }, [samples, calculateHPI]);
+  }, [samples]);
 
   // Perform what-if scenario planning
   const performScenarioPlanning = useCallback(() => {
@@ -248,7 +248,7 @@ export default function AdvancedAnalysisPage() {
     ];
     
     return scenarios;
-  }, [samples, calculateHPI]);
+  }, [samples]);
 
   // Run analyses when samples change
   useEffect(() => {

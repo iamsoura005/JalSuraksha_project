@@ -48,8 +48,11 @@ export default function PlasmaBackground({
 }
 
 // Simple error boundary component
-class ErrorBoundary extends React.Component {
-  constructor(props) {
+class ErrorBoundary extends React.Component<{
+  children: React.ReactNode;
+  onError?: () => void;
+}, { hasError: boolean }> {
+  constructor(props: { children: React.ReactNode; onError?: () => void }) {
     super(props);
     this.state = { hasError: false };
   }
@@ -58,7 +61,7 @@ class ErrorBoundary extends React.Component {
     return { hasError: true };
   }
 
-  componentDidCatch(error, info) {
+  componentDidCatch(error: Error, info: React.ErrorInfo) {
     console.error('PlasmaBackground failed to render:', error, info);
     if (this.props.onError) this.props.onError();
   }

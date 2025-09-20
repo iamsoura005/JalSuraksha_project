@@ -3,7 +3,7 @@
 import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSamplesStore } from '@/stores/sampleStore';
-import { processCSV, processExcel, validateFileType, validateFileSize } from '@/lib/fileProcessing';
+import { processCSV, processExcel, validateFileType, validateFileSize } from '@/lib/fileProcessingNew';
 import { SampleData } from '@/types';
 
 // Define the type for the store
