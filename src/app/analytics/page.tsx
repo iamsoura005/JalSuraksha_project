@@ -48,6 +48,23 @@ export default function Analytics() {
   const [selectedMetric, setSelectedMetric] = useState<'hpi' | 'hei'>('hpi');
   const [selectedLocation, setSelectedLocation] = useState<string>('');
 
+  const generateMockData = useCallback((days: number) => {
+    const mockData: AnalyticsData[] = [];
+    for (let i = days - 1; i >= 0; i--) {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      
+      mockData.push({
+        date: date.toISOString().split('T')[0],
+        hpi: 80 + Math.random() * 120 + Math.sin(i * 0.1) * 20,
+        hei: 1 + Math.random() * 2 + Math.sin(i * 0.15) * 0.5,
+        safetyLevel: Math.random() > 0.7 ? 'High' : Math.random() > 0.4 ? 'Moderate' : 'Safe',
+        location: selectedLocation || ['Delhi', 'Mumbai', 'Bangalore', 'Chennai'][Math.floor(Math.random() * 4)]
+      });
+    }
+    setData(mockData);
+  }, [selectedLocation]);
+
   const loadAnalyticsData = useCallback(async () => {
     setLoading(true);
     try {
@@ -89,23 +106,6 @@ export default function Analytics() {
       setLoading(false);
     }
   }, [timeRange, selectedLocation, generateMockData]);
-
-  const generateMockData = useCallback((days: number) => {
-    const mockData: AnalyticsData[] = [];
-    for (let i = days - 1; i >= 0; i--) {
-      const date = new Date();
-      date.setDate(date.getDate() - i);
-      
-      mockData.push({
-        date: date.toISOString().split('T')[0],
-        hpi: 80 + Math.random() * 120 + Math.sin(i * 0.1) * 20,
-        hei: 1 + Math.random() * 2 + Math.sin(i * 0.15) * 0.5,
-        safetyLevel: Math.random() > 0.7 ? 'High' : Math.random() > 0.4 ? 'Moderate' : 'Safe',
-        location: selectedLocation || ['Delhi', 'Mumbai', 'Bangalore', 'Chennai'][Math.floor(Math.random() * 4)]
-      });
-    }
-    setData(mockData);
-  }, [selectedLocation]);
 
   const loadRealTimeData = useCallback(async () => {
     try {
