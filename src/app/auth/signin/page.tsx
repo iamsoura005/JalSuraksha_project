@@ -51,8 +51,8 @@ export default function SignIn() {
           router.push('/dashboard');
         }
       }
-    } catch (err: any) {
-      setError(err.message || 'Authentication failed. Please try again.');
+    } catch (err: unknown) {
+      setError((err as Error)?.message || 'Authentication failed. Please try again.');
     } finally {
       setLoading(false);
     }

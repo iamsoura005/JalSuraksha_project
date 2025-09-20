@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
 import { 
   getWeatherData, 
@@ -48,12 +48,7 @@ export default function Analytics() {
   const [selectedMetric, setSelectedMetric] = useState<'hpi' | 'hei'>('hpi');
   const [selectedLocation, setSelectedLocation] = useState<string>('');
 
-  useEffect(() => {
-    loadAnalyticsData();
-    loadRealTimeData();
-  }, [timeRange, selectedLocation]);
-
-  const loadAnalyticsData = async () => {
+  const loadAnalyticsData = useCallback(async () => {
     setLoading(true);
     try {
       // Load water reports from database
@@ -93,9 +88,9 @@ export default function Analytics() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [timeRange, selectedLocation, generateMockData]);
 
-  const generateMockData = (days: number) => {
+  const generateMockData = useCallback((days: number) => {
     const mockData: AnalyticsData[] = [];
     for (let i = days - 1; i >= 0; i--) {
       const date = new Date();
@@ -110,9 +105,9 @@ export default function Analytics() {
       });
     }
     setData(mockData);
-  };
+  }, [selectedLocation]);
 
-  const loadRealTimeData = async () => {
+  const loadRealTimeData = useCallback(async () => {
     try {
       // Load weather data
       const { data: weather } = await getWeatherData(selectedLocation, 5);
@@ -134,7 +129,12 @@ export default function Analytics() {
     } catch (error) {
       console.error('Error loading real-time data:', error);
     }
-  };
+  }, [selectedLocation]);
+
+  useEffect(() => {
+    loadAnalyticsData();
+    loadRealTimeData();
+  }, [loadAnalyticsData, loadRealTimeData]);
 
   const runPredictiveAnalysis = async () => {
     if (!selectedLocation) {
@@ -239,7 +239,7 @@ export default function Analytics() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">Time Range</label>
                 <select
                   value={timeRange}
-                  onChange={(e) => setTimeRange(e.target.value as any)}
+                  onChange={(e) => setTimeRange(e.target.value as '7d' | '30d' | '90d' | '1y')}
                   className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="7d">Last 7 days</option>
@@ -253,7 +253,7 @@ export default function Analytics() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">Metric</label>
                 <select
                   value={selectedMetric}
-                  onChange={(e) => setSelectedMetric(e.target.value as any)}
+                  onChange={(e) => setSelectedMetric(e.target.value as 'hpi' | 'hei')}
                   className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="hpi">Heavy Metal Pollution Index (HPI)</option>
