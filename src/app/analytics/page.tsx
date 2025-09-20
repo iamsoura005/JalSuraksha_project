@@ -440,10 +440,15 @@ export default function Analytics() {
                   cx="50%"
                   cy="50%"
                   labelLine={false}
-                  label={({ name, value }: { name: string; value: number }) => {
+                  label={(props) => {
+                    const { name, value, percent } = props as unknown as { name?: string; value?: number; percent?: number };
                     const total = pieData.reduce((sum, entry) => sum + entry.value, 0);
-                    const percent = ((value / total) * 100).toFixed(0);
-                    return `${name} ${percent}%`;
+                    const pct = typeof percent === 'number'
+                      ? (percent * 100).toFixed(0)
+                      : typeof value === 'number' && total > 0
+                        ? ((value / total) * 100).toFixed(0)
+                        : '0';
+                    return `${name ?? ''} ${pct}%`;
                   }}
                   outerRadius={80}
                   fill="#8884d8"
