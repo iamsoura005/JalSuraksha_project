@@ -7,6 +7,8 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import PlasmaBackground from "@/components/PlasmaBackground";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import SupabaseConnectionTest from "@/components/SupabaseConnectionTest";
+import AuthDebug from "@/components/AuthDebug";
+import SupabaseTest from "@/components/SupabaseTest";
 
 export const metadata: Metadata = {
   title: "JalSuraksha - Smart Water Testing",
@@ -50,6 +52,8 @@ export default function RootLayout({
                   {children}
                 </main>
                 <SupabaseConnectionTest />
+                <AuthDebug />
+                <SupabaseTest />
               </I18nProvider>
             </AuthProvider>
           </div>

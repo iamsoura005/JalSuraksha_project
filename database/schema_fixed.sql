@@ -3,7 +3,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "postgis";
 
 -- Users table (extends Supabase auth.users)
-CREATE TABLE public.users (
+CREATE TABLE IF NOT EXISTS public.users (
   id UUID REFERENCES auth.users(id) PRIMARY KEY,
   email TEXT,
   phone TEXT,
@@ -14,7 +14,7 @@ CREATE TABLE public.users (
 );
 
 -- Water reports table
-CREATE TABLE public.water_reports (
+CREATE TABLE IF NOT EXISTS public.water_reports (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   user_id UUID REFERENCES public.users(id) ON DELETE CASCADE,
   sample_id TEXT NOT NULL,
@@ -40,7 +40,7 @@ CREATE TABLE public.water_reports (
 );
 
 -- Community reports table
-CREATE TABLE public.community_reports (
+CREATE TABLE IF NOT EXISTS public.community_reports (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   user_id UUID REFERENCES public.users(id) ON DELETE CASCADE,
   title TEXT NOT NULL,
@@ -59,7 +59,7 @@ CREATE TABLE public.community_reports (
 );
 
 -- Weather data table
-CREATE TABLE public.weather_data (
+CREATE TABLE IF NOT EXISTS public.weather_data (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   location TEXT NOT NULL,
   latitude DECIMAL(10, 8) NOT NULL,
@@ -74,7 +74,7 @@ CREATE TABLE public.weather_data (
 );
 
 -- Water treatment facilities table
-CREATE TABLE public.water_treatment_facilities (
+CREATE TABLE IF NOT EXISTS public.water_treatment_facilities (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   name TEXT NOT NULL,
   location TEXT NOT NULL,
@@ -90,7 +90,7 @@ CREATE TABLE public.water_treatment_facilities (
 );
 
 -- Predictive analysis table
-CREATE TABLE public.predictive_analysis (
+CREATE TABLE IF NOT EXISTS public.predictive_analysis (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   location TEXT NOT NULL,
   analysis_type TEXT CHECK (analysis_type IN ('trend', 'seasonal', 'prediction')) NOT NULL,
@@ -103,7 +103,7 @@ CREATE TABLE public.predictive_analysis (
 );
 
 -- Agriculture impact assessments table
-CREATE TABLE public.agriculture_impacts (
+CREATE TABLE IF NOT EXISTS public.agriculture_impacts (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   location TEXT NOT NULL,
   latitude DECIMAL(10, 8),
@@ -118,21 +118,21 @@ CREATE TABLE public.agriculture_impacts (
 );
 
 -- Create indexes for better performance
-CREATE INDEX idx_water_reports_user_id ON public.water_reports(user_id);
-CREATE INDEX idx_water_reports_location ON public.water_reports(location);
-CREATE INDEX idx_water_reports_safety_level ON public.water_reports(safety_level);
-CREATE INDEX idx_water_reports_created_at ON public.water_reports(created_at);
+CREATE INDEX IF NOT EXISTS idx_water_reports_user_id ON public.water_reports(user_id);
+CREATE INDEX IF NOT EXISTS idx_water_reports_location ON public.water_reports(location);
+CREATE INDEX IF NOT EXISTS idx_water_reports_safety_level ON public.water_reports(safety_level);
+CREATE INDEX IF NOT EXISTS idx_water_reports_created_at ON public.water_reports(created_at);
 
-CREATE INDEX idx_community_reports_user_id ON public.community_reports(user_id);
-CREATE INDEX idx_community_reports_status ON public.community_reports(status);
-CREATE INDEX idx_community_reports_priority ON public.community_reports(priority);
-CREATE INDEX idx_community_reports_created_at ON public.community_reports(created_at);
+CREATE INDEX IF NOT EXISTS idx_community_reports_user_id ON public.community_reports(user_id);
+CREATE INDEX IF NOT EXISTS idx_community_reports_status ON public.community_reports(status);
+CREATE INDEX IF NOT EXISTS idx_community_reports_priority ON public.community_reports(priority);
+CREATE INDEX IF NOT EXISTS idx_community_reports_created_at ON public.community_reports(created_at);
 
-CREATE INDEX idx_weather_data_location ON public.weather_data(location);
-CREATE INDEX idx_weather_data_recorded_at ON public.weather_data(recorded_at);
+CREATE INDEX IF NOT EXISTS idx_weather_data_location ON public.weather_data(location);
+CREATE INDEX IF NOT EXISTS idx_weather_data_recorded_at ON public.weather_data(recorded_at);
 
-CREATE INDEX idx_predictive_analysis_location ON public.predictive_analysis(location);
-CREATE INDEX idx_predictive_analysis_type ON public.predictive_analysis(analysis_type);
+CREATE INDEX IF NOT EXISTS idx_predictive_analysis_location ON public.predictive_analysis(location);
+CREATE INDEX IF NOT EXISTS idx_predictive_analysis_type ON public.predictive_analysis(analysis_type);
 
 -- Enable Row Level Security (RLS)
 ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
@@ -143,18 +143,30 @@ ALTER TABLE public.water_treatment_facilities ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.predictive_analysis ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.agriculture_impacts ENABLE ROW LEVEL SECURITY;
 
--- Create RLS policies
--- Users can read, insert, and update their own data
+-- Drop existing policies if they exist
+DROP POLICY IF EXISTS "Users can view own profile" ON public.users;
+DROP POLICY IF EXISTS "Users can update own profile" ON public.users;
+DROP POLICY IF EXISTS "Users can insert own profile" ON public.users;
+DROP POLICY IF EXISTS "Enable insert for authenticated users only" ON public.users;
+
+-- Create RLS policies for users table
+-- Allow users to view their own profile
 CREATE POLICY "Users can view own profile" ON public.users
   FOR SELECT USING (auth.uid() = id);
 
-CREATE POLICY "Users can insert own profile" ON public.users
-  FOR INSERT WITH CHECK (auth.uid() = id);
-
+-- Allow users to update their own profile
 CREATE POLICY "Users can update own profile" ON public.users
   FOR UPDATE USING (auth.uid() = id);
 
+-- CRITICAL: Allow authenticated users to insert their own profile during signup
+CREATE POLICY "Users can insert own profile" ON public.users
+  FOR INSERT WITH CHECK (auth.uid() = id);
+
 -- Water reports policies
+DROP POLICY IF EXISTS "Users can view all water reports" ON public.water_reports;
+DROP POLICY IF EXISTS "Users can insert own water reports" ON public.water_reports;
+DROP POLICY IF EXISTS "Users can update own water reports" ON public.water_reports;
+
 CREATE POLICY "Users can view all water reports" ON public.water_reports
   FOR SELECT USING (true);
 
@@ -165,6 +177,10 @@ CREATE POLICY "Users can update own water reports" ON public.water_reports
   FOR UPDATE USING (auth.uid() = user_id);
 
 -- Community reports policies
+DROP POLICY IF EXISTS "Users can view all community reports" ON public.community_reports;
+DROP POLICY IF EXISTS "Users can insert own community reports" ON public.community_reports;
+DROP POLICY IF EXISTS "Users can update own community reports" ON public.community_reports;
+
 CREATE POLICY "Users can view all community reports" ON public.community_reports
   FOR SELECT USING (true);
 
@@ -175,18 +191,22 @@ CREATE POLICY "Users can update own community reports" ON public.community_repor
   FOR UPDATE USING (auth.uid() = user_id);
 
 -- Weather data is publicly readable
+DROP POLICY IF EXISTS "Weather data is publicly readable" ON public.weather_data;
 CREATE POLICY "Weather data is publicly readable" ON public.weather_data
   FOR SELECT USING (true);
 
 -- Water treatment facilities are publicly readable
+DROP POLICY IF EXISTS "Facilities are publicly readable" ON public.water_treatment_facilities;
 CREATE POLICY "Facilities are publicly readable" ON public.water_treatment_facilities
   FOR SELECT USING (true);
 
 -- Predictive analysis is publicly readable
+DROP POLICY IF EXISTS "Predictive analysis is publicly readable" ON public.predictive_analysis;
 CREATE POLICY "Predictive analysis is publicly readable" ON public.predictive_analysis
   FOR SELECT USING (true);
 
 -- Agriculture impacts are publicly readable
+DROP POLICY IF EXISTS "Agriculture impacts are publicly readable" ON public.agriculture_impacts;
 CREATE POLICY "Agriculture impacts are publicly readable" ON public.agriculture_impacts
   FOR SELECT USING (true);
 
@@ -200,18 +220,22 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Create triggers for updated_at
+DROP TRIGGER IF EXISTS handle_users_updated_at ON public.users;
 CREATE TRIGGER handle_users_updated_at
   BEFORE UPDATE ON public.users
   FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 
+DROP TRIGGER IF EXISTS handle_water_reports_updated_at ON public.water_reports;
 CREATE TRIGGER handle_water_reports_updated_at
   BEFORE UPDATE ON public.water_reports
   FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 
+DROP TRIGGER IF EXISTS handle_community_reports_updated_at ON public.community_reports;
 CREATE TRIGGER handle_community_reports_updated_at
   BEFORE UPDATE ON public.community_reports
   FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 
+DROP TRIGGER IF EXISTS handle_water_treatment_facilities_updated_at ON public.water_treatment_facilities;
 CREATE TRIGGER handle_water_treatment_facilities_updated_at
   BEFORE UPDATE ON public.water_treatment_facilities
   FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
