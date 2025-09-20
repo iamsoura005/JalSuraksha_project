@@ -1,9 +1,28 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+// Use environment variables with fallbacks
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://kxnjksjposqkkxofcmjf.supabase.co';
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt4bmprc2pwb3Nxa2t4b2ZjbWpmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgzMzA0ODAsImV4cCI6MjA3MzkwNjQ4MH0.50mePTW7aoqDDWrBkmj_xtXZFxxdnkv9usUCaG2hbG8';
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Validate that we have proper URLs (not placeholder values)
+const isValidUrl = (url: string) => {
+  try {
+    new URL(url);
+    return !url.includes('placeholder') && !url.includes('your-project');
+  } catch {
+    return false;
+  }
+};
+
+const isValidKey = (key: string) => {
+  return key && key.length > 10 && !key.includes('placeholder') && !key.includes('your-anon-key');
+};
+
+// Only create client if we have valid credentials
+export const supabase = createClient(
+  isValidUrl(supabaseUrl) ? supabaseUrl : 'https://kxnjksjposqkkxofcmjf.supabase.co',
+  isValidKey(supabaseAnonKey) ? supabaseAnonKey : 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt4bmprc2pwb3Nxa2t4b2ZjbWpmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgzMzA0ODAsImV4cCI6MjA3MzkwNjQ4MH0.50mePTW7aoqDDWrBkmj_xtXZFxxdnkv9usUCaG2hbG8'
+);
 
 // Database Types
 export interface User {
