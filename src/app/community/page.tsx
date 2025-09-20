@@ -45,11 +45,6 @@ export default function Community() {
     location: ''
   });
 
-  useEffect(() => {
-    loadReports();
-    loadStatistics();
-  }, [selectedCategory, selectedStatus, loadReports]);
-
   const loadReports = useCallback(async () => {
     setLoading(true);
     try {
@@ -66,6 +61,11 @@ export default function Community() {
       setLoading(false);
     }
   }, [selectedCategory, selectedStatus]);
+
+  useEffect(() => {
+    loadReports();
+    loadStatistics();
+  }, [selectedCategory, selectedStatus, loadReports]);
 
   const loadStatistics = async () => {
     try {
