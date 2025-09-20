@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { 
   getCommunityReports, 
@@ -31,7 +31,11 @@ export default function Community() {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
-  const [statistics, setStatistics] = useState<any>(null);
+  const [statistics, setStatistics] = useState<{
+    total: number;
+    recent: number;
+    byStatus?: { [key: string]: number };
+  } | null>(null);
 
   const [formData, setFormData] = useState<CreateReportData>({
     title: '',
@@ -44,12 +48,12 @@ export default function Community() {
   useEffect(() => {
     loadReports();
     loadStatistics();
-  }, [selectedCategory, selectedStatus]);
+  }, [selectedCategory, selectedStatus, loadReports]);
 
-  const loadReports = async () => {
+  const loadReports = useCallback(async () => {
     setLoading(true);
     try {
-      const filters: any = {};
+      const filters: Record<string, string> = {};
       if (selectedCategory !== 'all') filters.category = selectedCategory;
       if (selectedStatus !== 'all') filters.status = selectedStatus;
 
@@ -61,7 +65,7 @@ export default function Community() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedCategory, selectedStatus]);
 
   const loadStatistics = async () => {
     try {
@@ -94,8 +98,8 @@ export default function Community() {
       });
       setShowCreateForm(false);
       loadStatistics();
-    } catch (error: any) {
-      alert('Error creating report: ' + error.message);
+    } catch (error: unknown) {
+      alert('Error creating report: ' + (error as Error)?.message);
     }
   };
 
