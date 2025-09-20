@@ -23,18 +23,56 @@ export const createCommunityReport = async (data: CreateReportData) => {
     if (userError) throw userError;
     if (!user) throw new Error('User not authenticated');
 
+    // Ensure user profile exists
+    const { error: profileError } = await supabase
+      .from('users')
+      .select('id')
+      .eq('id', user.id)
+      .single();
+
+    if (profileError && profileError.code === 'PGRST116') {
+      // User profile doesn't exist, create it
+      const { error: createProfileError } = await supabase
+        .from('users')
+        .insert({
+          id: user.id,
+          email: user.email,
+          full_name: user.user_metadata?.full_name || user.user_metadata?.name || 'Anonymous User',
+          auth_method: 'email',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        });
+
+      if (createProfileError) {
+        console.error('Error creating user profile:', createProfileError);
+        throw new Error('Failed to create user profile');
+      }
+    } else if (profileError) {
+      throw profileError;
+    }
+
     const { data: report, error } = await supabase
       .from('community_reports')
       .insert({
         user_id: user.id,
-        ...data
+        ...data,
+        status: 'open',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
       })
-      .select()
+      .select(`
+        *,
+        users (
+          full_name,
+          email
+        )
+      `)
       .single();
 
     if (error) throw error;
     return { data: report, error: null };
   } catch (error) {
+    console.error('Error creating community report:', error);
     return { data: null, error };
   }
 };

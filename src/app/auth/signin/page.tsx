@@ -4,9 +4,12 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { signIn, sendOTP, verifyOTP } from '@/lib/auth';
+import { signInWithOAuth, getOAuthProviders } from '@/lib/oauth';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function SignIn() {
   const router = useRouter();
+  const { connectWeb3 } = useAuth();
   const [authMethod, setAuthMethod] = useState<'email' | 'phone'>('email');
   const [step, setStep] = useState<'credentials' | 'otp'>('credentials');
   const [formData, setFormData] = useState({
@@ -16,7 +19,39 @@ export default function SignIn() {
     otp: ''
   });
   const [loading, setLoading] = useState(false);
+  const [oauthLoading, setOauthLoading] = useState<string | null>(null);
+  const [web3Loading, setWeb3Loading] = useState(false);
   const [error, setError] = useState('');
+
+  const handleOAuthSignIn = async (provider: string) => {
+    setOauthLoading(provider);
+    setError('');
+    
+    try {
+      const { error: oauthError } = await signInWithOAuth(provider as 'google' | 'github' | 'discord' | 'twitter');
+      if (oauthError) throw new Error(oauthError);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : `Failed to sign in with ${provider}`;
+      setError(errorMessage);
+    } finally {
+      setOauthLoading(null);
+    }
+  };
+
+  const handleWeb3SignIn = async () => {
+    setWeb3Loading(true);
+    setError('');
+    
+    try {
+      await connectWeb3();
+      router.push('/dashboard');
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to connect wallet';
+      setError(errorMessage);
+    } finally {
+      setWeb3Loading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -244,6 +279,58 @@ export default function SignIn() {
                 </button>
               </div>
             </form>
+          )}
+
+          {/* OAuth Authentication */}
+          {step === 'credentials' && (
+            <div className="mt-6">
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-300"></div>
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-2 bg-white text-gray-500">Or continue with</span>
+                </div>
+              </div>
+
+              <div className="mt-6 grid grid-cols-2 gap-3">
+                {getOAuthProviders().slice(0, 2).map((provider) => (
+                  <button
+                    key={provider.name}
+                    onClick={() => handleOAuthSignIn(provider.name)}
+                    disabled={oauthLoading === provider.name}
+                    className={`w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-white ${provider.color} focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50`}
+                  >
+                    {oauthLoading === provider.name ? (
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    ) : (
+                      <>
+                        <span className="mr-2">{provider.icon}</span>
+                        {provider.displayName}
+                      </>
+                    )}
+                  </button>
+                ))}
+              </div>
+
+              {/* Web3 Authentication */}
+              <div className="mt-4">
+                <button
+                  onClick={handleWeb3SignIn}
+                  disabled={web3Loading}
+                  className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50"
+                >
+                  {web3Loading ? (
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  ) : (
+                    <>
+                      <span className="mr-2">🦊</span>
+                      Connect MetaMask
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
           )}
 
           {/* Demo accounts */}

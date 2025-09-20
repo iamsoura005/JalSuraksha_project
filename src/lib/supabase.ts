@@ -30,6 +30,10 @@ export interface User {
   email?: string;
   phone?: string;
   full_name?: string;
+  wallet_address?: string;
+  auth_method?: 'email' | 'phone' | 'oauth' | 'web3';
+  provider?: string;
+  avatar_url?: string;
   created_at: string;
   updated_at: string;
 }
