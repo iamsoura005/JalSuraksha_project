@@ -17,7 +17,7 @@ export default function SupabaseConnectionTest() {
       setError('');
 
       // Test basic connection with a simple query that doesn't require authentication
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('water_treatment_facilities')
         .select('count')
         .limit(1);
