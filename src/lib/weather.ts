@@ -22,7 +22,7 @@ export interface WaterTreatmentFacility {
   longitude: number;
   capacity: number;
   status: 'active' | 'inactive' | 'maintenance';
-  contact_info?: any;
+  contact_info?: string;
   services: string[];
   operating_hours?: string;
 }
@@ -282,7 +282,12 @@ export const getWeatherForecast = async (lat: number, lon: number, days: number 
 
     const data = await response.json();
     
-    const forecast = data.list.slice(0, days * 8).filter((_: any, index: number) => index % 8 === 0).map((item: any) => ({
+    const forecast = data.list.slice(0, days * 8).filter((_: unknown, index: number) => index % 8 === 0).map((item: {
+      dt_txt: string;
+      main: { temp: number; humidity: number };
+      rain?: { '3h': number };
+      weather: Array<{ description: string }>;
+    }) => ({
       date: item.dt_txt,
       temperature: item.main.temp,
       humidity: item.main.humidity,

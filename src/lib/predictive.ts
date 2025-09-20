@@ -4,8 +4,8 @@ export interface PredictiveAnalysis {
   id?: string;
   location: string;
   analysis_type: 'trend' | 'seasonal' | 'prediction';
-  parameters: Record<string, any>;
-  results: Record<string, any>;
+  parameters: Record<string, unknown>;
+  results: Record<string, unknown>;
   confidence_score: number;
   warning_level: 'none' | 'low' | 'medium' | 'high' | 'critical';
   valid_until?: string;

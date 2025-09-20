@@ -1,5 +1,4 @@
 import { supabase } from './supabase';
-import { CommunityReport } from './supabase';
 
 export interface CreateReportData {
   title: string;
@@ -117,7 +116,7 @@ export const getCommunityReport = async (id: string) => {
 // Update a community report (for admins)
 export const updateCommunityReport = async (id: string, updates: UpdateReportData) => {
   try {
-    const updateData: any = { ...updates };
+    const updateData: Record<string, unknown> = { ...updates };
     
     if (updates.status === 'resolved') {
       updateData.resolved_at = new Date().toISOString();
@@ -192,12 +191,12 @@ export const getReportStatistics = async () => {
 };
 
 // Upload attachment (placeholder - would need actual file upload implementation)
-export const uploadAttachment = async (file: File): Promise<{ url: string; error: null } | { url: null; error: any }> => {
+export const uploadAttachment = async (file: File): Promise<{ url: string; error: null } | { url: null; error: unknown }> => {
   try {
     // This would typically upload to Supabase Storage
     // For now, return a placeholder URL
     const fileName = `${Date.now()}-${file.name}`;
-    const { data, error } = await supabase.storage
+    const { error } = await supabase.storage
       .from('community-attachments')
       .upload(fileName, file);
 
