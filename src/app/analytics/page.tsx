@@ -440,7 +440,7 @@ export default function Analytics() {
                   cx="50%"
                   cy="50%"
                   labelLine={false}
-                  label={({ name, value }: any) => {
+                  label={({ name, value }: { name: string; value: number }) => {
                     const total = pieData.reduce((sum, entry) => sum + entry.value, 0);
                     const percent = ((value / total) * 100).toFixed(0);
                     return `${name} ${percent}%`;
