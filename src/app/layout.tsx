@@ -6,6 +6,7 @@ import { I18nProvider } from "@/components/I18nProvider";
 import { AuthProvider } from "@/contexts/AuthContext";
 import PlasmaBackground from "@/components/PlasmaBackground";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import SupabaseConnectionTest from "@/components/SupabaseConnectionTest";
 
 export const metadata: Metadata = {
   title: "JalSuraksha - Smart Water Testing",
@@ -48,6 +49,7 @@ export default function RootLayout({
                 <main className="min-h-screen">
                   {children}
                 </main>
+                <SupabaseConnectionTest />
               </I18nProvider>
             </AuthProvider>
           </div>
