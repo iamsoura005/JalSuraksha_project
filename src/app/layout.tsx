@@ -3,6 +3,7 @@ import "./globals.css";
 import "leaflet/dist/leaflet.css";
 import Navigation from "@/components/Navigation";
 import { I18nProvider } from "@/components/I18nProvider";
+import { AuthProvider } from "@/contexts/AuthContext";
 import PlasmaBackground from "@/components/PlasmaBackground";
 import ErrorBoundary from "@/components/ErrorBoundary";
 
@@ -41,12 +42,14 @@ export default function RootLayout({
             mouseInteractive={true}
           />
           <div className="relative z-10 min-h-screen">
-            <I18nProvider>
-              <Navigation />
-              <main className="min-h-screen">
-                {children}
-              </main>
-            </I18nProvider>
+            <AuthProvider>
+              <I18nProvider>
+                <Navigation />
+                <main className="min-h-screen">
+                  {children}
+                </main>
+              </I18nProvider>
+            </AuthProvider>
           </div>
         </ErrorBoundary>
         <script

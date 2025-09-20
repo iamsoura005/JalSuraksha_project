@@ -1,77 +1,204 @@
-import NextAuth from 'next-auth';
-import Credentials from 'next-auth/providers/credentials';
-import bcrypt from 'bcryptjs';
-import { User } from '@/types';
+import { supabase } from './supabase';
 
-// Mock user database (in a real app, this would be a real database)
-const users: User[] = [
-  {
-    id: '1',
-    name: 'Admin User',
-    email: 'admin@example.com',
-    password: '$2a$10$8K1p/a0dhrxiowP.dnkgNORTWgdEDHn5L2/xjpEWuC.QQv4rKO9jO', // password: admin123
-    role: 'admin'
-  },
-  {
-    id: '2',
-    name: 'Researcher User',
-    email: 'researcher@example.com',
-    password: '$2a$10$8K1p/a0dhrxiowP.dnkgNORTWgdEDHn5L2/xjpEWuC.QQv4rKO9jO', // password: admin123
-    role: 'researcher'
-  }
-];
+export interface AuthUser {
+  id: string;
+  email?: string;
+  phone?: string;
+  full_name?: string;
+  avatar_url?: string;
+}
 
-export const { handlers, signIn, signOut, auth } = NextAuth({
-  providers: [
-    Credentials({
-      credentials: {
-        email: { label: 'Email', type: 'email' },
-        password: { label: 'Password', type: 'password' }
-      },
-      async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          return null;
+export interface SignUpData {
+  email?: string;
+  phone?: string;
+  password: string;
+  full_name: string;
+}
+
+export interface SignInData {
+  email?: string;
+  phone?: string;
+  password: string;
+}
+
+// Sign up with email or phone
+export const signUp = async (data: SignUpData) => {
+  try {
+    let authData;
+    
+    if (data.email) {
+      authData = await supabase.auth.signUp({
+        email: data.email,
+        password: data.password,
+        options: {
+          data: {
+            full_name: data.full_name,
+          }
         }
-
-        const user = users.find(u => u.email === credentials.email);
-        
-        if (!user) {
-          return null;
+      });
+    } else if (data.phone) {
+      authData = await supabase.auth.signUp({
+        phone: data.phone,
+        password: data.password,
+        options: {
+          data: {
+            full_name: data.full_name,
+          }
         }
-
-        const isValid = await bcrypt.compare(credentials.password as string, user.password);
-        
-        if (!isValid) {
-          return null;
-        }
-
-        return {
-          id: user.id,
-          name: user.name,
-          email: user.email
-          // Note: role is not included in the default User type
-        };
-      }
-    })
-  ],
-  pages: {
-    signIn: '/auth/signin',
-  },
-  callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id;
-        // We can't add role to token because it's not in the default User type
-      }
-      return token;
-    },
-    async session({ session, token }) {
-      if (token && session.user) {
-        session.user.id = token.id as string;
-        // We can't add role to session because it's not in the default User type
-      }
-      return session;
+      });
+    } else {
+      throw new Error('Email or phone number is required');
     }
-  },
-  secret: process.env.NEXTAUTH_SECRET,
-});
+
+    if (authData.error) throw authData.error;
+
+    // Create user profile
+    if (authData.data.user) {
+      const { error: profileError } = await supabase
+        .from('users')
+        .insert({
+          id: authData.data.user.id,
+          email: data.email,
+          phone: data.phone,
+          full_name: data.full_name,
+        });
+
+      if (profileError) throw profileError;
+    }
+
+    return { data: authData.data, error: null };
+  } catch (error) {
+    return { data: null, error };
+  }
+};
+
+// Sign in with email or phone
+export const signIn = async (data: SignInData) => {
+  try {
+    let authData;
+    
+    if (data.email) {
+      authData = await supabase.auth.signInWithPassword({
+        email: data.email,
+        password: data.password,
+      });
+    } else if (data.phone) {
+      authData = await supabase.auth.signInWithPassword({
+        phone: data.phone,
+        password: data.password,
+      });
+    } else {
+      throw new Error('Email or phone number is required');
+    }
+
+    if (authData.error) throw authData.error;
+
+    return { data: authData.data, error: null };
+  } catch (error) {
+    return { data: null, error };
+  }
+};
+
+// Sign out
+export const signOut = async () => {
+  try {
+    const { error } = await supabase.auth.signOut();
+    if (error) throw error;
+    return { error: null };
+  } catch (error) {
+    return { error };
+  }
+};
+
+// Get current user
+export const getCurrentUser = async (): Promise<AuthUser | null> => {
+  try {
+    const { data: { user }, error } = await supabase.auth.getUser();
+    if (error) throw error;
+    
+    if (!user) return null;
+
+    // Get user profile
+    const { data: profile, error: profileError } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', user.id)
+      .single();
+
+    if (profileError) {
+      // If profile doesn't exist, create it
+      const { error: insertError } = await supabase
+        .from('users')
+        .insert({
+          id: user.id,
+          email: user.email,
+          phone: user.phone,
+          full_name: user.user_metadata?.full_name,
+        });
+      
+      if (insertError) throw insertError;
+      
+      return {
+        id: user.id,
+        email: user.email,
+        phone: user.phone,
+        full_name: user.user_metadata?.full_name,
+      };
+    }
+
+    return profile;
+  } catch (error) {
+    console.error('Error getting current user:', error);
+    return null;
+  }
+};
+
+// Update user profile
+export const updateProfile = async (updates: Partial<AuthUser>) => {
+  try {
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError) throw userError;
+    if (!user) throw new Error('No user found');
+
+    const { error } = await supabase
+      .from('users')
+      .update(updates)
+      .eq('id', user.id);
+
+    if (error) throw error;
+
+    return { error: null };
+  } catch (error) {
+    return { error };
+  }
+};
+
+// Send OTP for phone verification
+export const sendOTP = async (phone: string) => {
+  try {
+    const { error } = await supabase.auth.signInWithOtp({
+      phone: phone,
+    });
+
+    if (error) throw error;
+    return { error: null };
+  } catch (error) {
+    return { error };
+  }
+};
+
+// Verify OTP
+export const verifyOTP = async (phone: string, token: string) => {
+  try {
+    const { data, error } = await supabase.auth.verifyOtp({
+      phone: phone,
+      token: token,
+      type: 'sms'
+    });
+
+    if (error) throw error;
+    return { data, error: null };
+  } catch (error) {
+    return { data: null, error };
+  }
+};
