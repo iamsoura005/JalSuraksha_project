@@ -1,57 +1,66 @@
 'use client';
 
 import { ReactNode, useEffect, useState } from 'react';
-import { loadMLModels } from '@/lib/mlModels';
-import { loadEnhancedMLModels } from '@/lib/enhancedMLModels';
 
 export function MLProvider({ children }: { children: ReactNode }) {
-  const [isInitialized, setIsInitialized] = useState(false);
   const [initializationError, setInitializationError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Only initialize ML models in browser environment
+    // Load ML models in background without blocking the UI
     if (typeof window !== 'undefined') {
       const initializeMLModels = async () => {
         try {
-          console.log('Initializing ML models...');
+          console.log('Initializing ML models in background...');
           
-          // Load standard ML models
-          const standardModels = await loadMLModels();
-          console.log('Standard ML models loaded:', standardModels);
+          // Dynamic imports to avoid blocking
+          const [mlModelsModule, enhancedMLModelsModule] = await Promise.all([
+            import('@/lib/mlModels'),
+            import('@/lib/enhancedMLModels')
+          ]);
           
-          // Load enhanced ML models
-          const enhancedModels = await loadEnhancedMLModels();
-          console.log('Enhanced ML models loaded:', enhancedModels);
+          // Load models with timeout to prevent hanging
+          const loadWithTimeout = (promise: Promise<unknown>, timeout: number) => {
+            return Promise.race([
+              promise,
+              new Promise((_, reject) => 
+                setTimeout(() => reject(new Error('Model loading timeout')), timeout)
+              )
+            ]);
+          };
           
-          setIsInitialized(true);
-          console.log('ML models initialization complete');
+          // Try to load models with 10 second timeout
+          try {
+            await Promise.all([
+              loadWithTimeout(mlModelsModule.loadMLModels(), 10000),
+              loadWithTimeout(enhancedMLModelsModule.loadEnhancedMLModels(), 10000)
+            ]);
+            console.log('ML models loaded successfully in background');
+          } catch (timeoutError) {
+            console.warn('ML models loading timed out, continuing without ML features:', timeoutError);
+            setInitializationError('ML models loading timed out');
+          }
+          
         } catch (error) {
-          console.error('Failed to initialize ML models:', error);
+          console.warn('Failed to initialize ML models, continuing without ML features:', error);
           setInitializationError(error instanceof Error ? error.message : 'Unknown error');
-          setIsInitialized(true); // Still set to initialized so app can continue
         }
       };
 
-      initializeMLModels();
-    } else {
-      // In server environment, just set initialized to true
-      setIsInitialized(true);
+      // Start loading models after a short delay to let the UI render first
+      setTimeout(initializeMLModels, 1000);
     }
   }, []);
 
-  if (!isInitialized) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading ML models...</p>
-          {initializationError && (
-            <p className="mt-2 text-red-600 text-sm">Warning: {initializationError}</p>
-          )}
+  // Always render children immediately, don't block on ML model loading
+  return (
+    <>
+      {children}
+      {initializationError && (
+        <div className="fixed bottom-4 right-4 bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-2 rounded text-sm max-w-sm">
+          <p className="font-semibold">ML Features Limited</p>
+          <p className="text-xs">{initializationError}</p>
         </div>
-      </div>
-    );
-  }
-
-  return <>{children}</>;
+      )}
+    </>
+  );
 }

@@ -8,19 +8,39 @@ const nextConfig = {
     domains: [],
     unoptimized: true, // Helps with static exports
   },
-  // Improve static file handling
-  output: 'standalone', // Optimized for production deployments
+  // Remove output standalone for Vercel deployment
+  // output: 'standalone', // This can cause issues with Vercel
   // Improve production performance
   poweredByHeader: false, // Remove X-Powered-By header
   // Configure compression
   compress: true,
-  // Webpack configuration to handle WebGL
-  webpack: (config) => {
+  // Webpack configuration to handle WebGL and other issues
+  webpack: (config, { isServer }) => {
     // Ignore specific warnings that might be related to WebGL
     config.ignoreWarnings = [
       { module: /node_modules\/ogl/ },
+      { module: /node_modules\/@tensorflow/ },
     ];
+    
+    // Handle client-side only modules
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        path: false,
+        os: false,
+      };
+    }
+    
     return config;
+  },
+  // Experimental features for better performance
+  // experimental: {
+  //   optimizeCss: true,
+  // },
+  // Environment variables
+  env: {
+    CUSTOM_KEY: 'my-value',
   },
 };
 
